@@ -6,3 +6,4 @@ class SalesConfig(AppConfig):
     name = 'apps.sales'
     verbose_name = 'Vendas'
 
+

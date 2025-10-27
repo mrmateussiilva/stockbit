@@ -1,6 +1,9 @@
 # Dockerfile para produção do frontend
 FROM node:18-alpine as builder
 
+# Argumento de build para API URL
+ARG VITE_API_URL
+
 # Instala pnpm globalmente
 RUN npm install -g pnpm
 
@@ -15,6 +18,9 @@ RUN pnpm install --frozen-lockfile
 
 # Copia o código da aplicação
 COPY . .
+
+# Define a variável de ambiente para o build
+ENV VITE_API_URL=${VITE_API_URL}
 
 # Build da aplicação
 RUN pnpm run build
@@ -33,4 +39,5 @@ EXPOSE 80
 
 # Comando para executar o Nginx
 CMD ["nginx", "-g", "daemon off;"]
+
 

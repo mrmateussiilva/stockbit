@@ -162,6 +162,46 @@ make logs    # Visualiza logs
 4. Push para a branch (`git push origin feature/AmazingFeature`)
 5. Abra um Pull Request
 
+## 🚀 Deploy em Produção
+
+### Opção 1: Com Caddy (Recomendado - HTTPS Automático)
+
+O Caddy gerencia certificados SSL automaticamente. Consulte [DEPLOY_CADDY.md](DEPLOY_CADDY.md).
+
+**Comandos rápidos:**
+
+```bash
+# 1. Edite o Caddyfile com seu domínio
+nano Caddyfile
+
+# 2. Copiar arquivo de configuração
+cp env.production.example .env
+nano .env
+
+# 3. Build e iniciar
+docker-compose -f docker-compose.prod-caddy.yml build
+docker-compose -f docker-compose.prod-caddy.yml up -d
+
+# 4. Usar script helper
+./prod.sh start
+```
+
+### Opção 2: Com Nginx Direto
+
+Consulte [DEPLOY.md](DEPLOY.md) para instruções completas.
+
+```bash
+# Copiar arquivo de configuração
+cp env.production.example .env
+
+# Editar configurações
+nano .env
+
+# Build para produção
+USE_NGINX=1 ./prod.sh build
+USE_NGINX=1 ./prod.sh start
+```
+
 ## 📝 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.

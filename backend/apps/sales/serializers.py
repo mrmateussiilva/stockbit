@@ -127,3 +127,4 @@ class OrderSummarySerializer(serializers.Serializer):
     pending_orders = serializers.IntegerField()
     completed_orders = serializers.IntegerField()
 
+

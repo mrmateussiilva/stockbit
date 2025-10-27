@@ -1,0 +1,84 @@
+# Configuração do Caddy para proxy reverso com HTTPS automático
+# O Caddy gera automaticamente certificados SSL gratuitos via Let's Encrypt
+
+# Troque seu-domínio.com pelo seu domínio real
+seu-domínio.com {
+    # Proxy reverso para o frontend
+    handle / {
+        reverse_proxy frontend:80
+    }
+
+    # Proxy reverso para o backend API
+    handle /api/* {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_addr}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Proxy reverso para arquivos estáticos e media
+    handle /static/* {
+        reverse_proxy backend:8000
+    }
+
+    handle /media/* {
+        reverse_proxy backend:8000
+    }
+
+    # Logs
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# Configuração para localhost/desenvolvimento (opcional)
+localhost {
+    handle / {
+        reverse_proxy frontend:80
+    }
+
+    handle /api/* {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_addr}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    handle /static/* {
+        reverse_proxy backend:8000
+    }
+
+    handle /media/* {
+        reverse_proxy backend:8000
+    }
+}
+
+# Headers de segurança globais
+header {
+    # Remove o header Server por segurança
+    -Server
+    
+    # Previne clickjacking
+    X-Frame-Options "SAMEORIGIN"
+    
+    # Proteção XSS
+    X-XSS-Protection "1; mode=block"
+    
+    # Previne MIME type sniffing
+    X-Content-Type-Options "nosniff"
+    
+    # Política de referrer
+    Referrer-Policy "no-referrer-when-downgrade"
+    
+    # Permissions Policy
+    Permissions-Policy "geolocation=(), microphone=(), camera=()"
+}
+
+# Compressão
+encode gzip zstd
+

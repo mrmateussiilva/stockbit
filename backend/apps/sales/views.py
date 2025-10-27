@@ -174,3 +174,4 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'total', 'quantity']
     ordering = ['-created_at']
 
+

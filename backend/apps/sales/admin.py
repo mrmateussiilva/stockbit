@@ -47,3 +47,4 @@ class OrderItemAdmin(admin.ModelAdmin):
     search_fields = ['product__name', 'order__order_number']
     readonly_fields = ['total']
 
+

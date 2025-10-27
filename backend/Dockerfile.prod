@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+# Define o diretório de trabalho
+WORKDIR /app
+
+# Instala dependências do sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copia requirements.txt
+COPY requirements.txt .
+
+# Instala dependências Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia o código da aplicação
+COPY . .
+
+# Coleta arquivos estáticos
+RUN python manage.py collectstatic --noinput
+
+# Expõe a porta
+EXPOSE 8000
+
+# Comando para executar a aplicação com gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "inventory_api.wsgi:application"]
+
