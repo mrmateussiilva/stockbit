@@ -31,15 +31,17 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile
       args:
         - VITE_API_URL=${VITE_API_URL}
-    image: stockbit-frontend:latest
+    image: stockbit-frontend-dev:latest
     expose:
-      - "80"
+      - "5173"
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
     volumes:
-      - static_files:/usr/share/nginx/html/static
-      - media_files:/usr/share/nginx/html/media
+      - ./frontend:/app
+      - /app/node_modules
     networks:
       - stockbit-network
     restart: unless-stopped
@@ -47,9 +49,8 @@ services:
   caddy:
     image: caddy:2-alpine
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "8080:80"
+      - "8443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data

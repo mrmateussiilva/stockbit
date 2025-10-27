@@ -1,0 +1,50 @@
+# Exemplo de configuração do Caddy para o Stockbit
+# Use este arquivo como referência para configurar o seu Caddy
+
+# Domínio de produção
+stockbit.finderbit.com.br {
+    # Proxy reverso para o backend API
+    handle /api/* {
+        reverse_proxy backend:8000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_addr}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+
+    # Proxy reverso para arquivos estáticos e media
+    handle /static/* {
+        reverse_proxy --static_files /static
+    }
+
+    handle /media/* {
+        reverse_proxy backend:8000
+    }
+
+    # Proxy reverso para o frontend na porta 5173
+    handle {
+        reverse_proxy frontend:5173 {
+            header_up Host {host}
+        }
+    }
+
+    # Logs
+    log {
+        output file /var/log/caddy/access.log
+        format json
+    }
+}
+
+# Headers de segurança globais
+header {
+    -Server
+    X-Frame-Options "SAMEORIGIN"
+    X-XSS-Protection "1; mode=block"
+    X-Content-Type-Options "nosniff"
+    Referrer-Policy "no-referrer-when-downgrade"
+}
+
+# Compressão
+encode gzip zstd
+

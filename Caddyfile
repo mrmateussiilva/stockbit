@@ -3,12 +3,7 @@
 
 # Domínio de produção
 stockbit.finderbit.com.br {
-    # Proxy reverso para o frontend
-    handle / {
-        reverse_proxy frontend:80
-    }
-
-    # Proxy reverso para o backend API
+    # Proxy reverso para o backend API (precisa vir antes do handle geral)
     handle /api/* {
         reverse_proxy backend:8000 {
             header_up Host {host}
@@ -27,6 +22,11 @@ stockbit.finderbit.com.br {
         reverse_proxy backend:8000
     }
 
+    # Proxy reverso para o frontend (catch-all)
+    handle {
+        reverse_proxy frontend:80
+    }
+
     # Logs
     log {
         output file /var/log/caddy/access.log
@@ -34,27 +34,30 @@ stockbit.finderbit.com.br {
     }
 }
 
-# Configuração para localhost/desenvolvimento (opcional)
-localhost {
-    handle / {
-        reverse_proxy frontend:80
-    }
-
+# Configuração para desenvolvimento na porta 8080
+# Para usar, acesse: http://localhost:8080
+:8080 {
+    # API
     handle /api/* {
-        reverse_proxy backend:8000 {
-            header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_addr}
-            header_up X-Forwarded-Proto {scheme}
-        }
+        reverse_proxy backend:8000
     }
 
+    # Arquivos estáticos
     handle /static/* {
         reverse_proxy backend:8000
     }
 
     handle /media/* {
         reverse_proxy backend:8000
+    }
+
+    # Frontend
+    handle {
+        reverse_proxy frontend:80
+    }
+
+    log {
+        output stdout
     }
 }
 
@@ -74,11 +77,7 @@ header {
     
     # Política de referrer
     Referrer-Policy "no-referrer-when-downgrade"
-    
-    # Permissions Policy
-    Permissions-Policy "geolocation=(), microphone=(), camera=()"
 }
 
 # Compressão
 encode gzip zstd
-
