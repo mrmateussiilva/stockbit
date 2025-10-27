@@ -1,24 +1,7 @@
-# Docker Compose para produção com Caddy como proxy reverso
+# Docker Compose para produção com Caddy como proxy reverso - SQLite
 version: '3.8'
 
 services:
-  db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: ${DB_NAME:-stockbit_db}
-      POSTGRES_USER: ${DB_USER:-stockbit_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - stockbit-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-stockbit_user}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   backend:
     build: 
       context: ./backend
@@ -30,13 +13,13 @@ services:
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS},caddy
-      - DATABASE_URL=postgresql://${DB_USER:-stockbit_user}:${DB_PASSWORD}@db:5432/${DB_NAME:-stockbit_db}
       - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
     env_file:
       - .env
     volumes:
       - static_files:/app/staticfiles
       - media_files:/app/media
+      - sqlite_data:/app
     command: >
       sh -c "python manage.py migrate --noinput &&
              python create_admin.py &&
@@ -44,9 +27,6 @@ services:
     networks:
       - stockbit-network
     restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
 
   frontend:
     build:
@@ -63,8 +43,6 @@ services:
     networks:
       - stockbit-network
     restart: unless-stopped
-    depends_on:
-      - backend
 
   caddy:
     image: caddy:2-alpine
@@ -91,9 +69,9 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
   static_files:
   media_files:
+  sqlite_data:
   caddy_data:
   caddy_config:
   caddy_logs:
