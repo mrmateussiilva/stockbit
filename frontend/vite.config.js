@@ -26,12 +26,7 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false, // Desabilitar em produção para build mais rápido
     cssCodeSplit: true, // Separar CSS em arquivos
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console.log em produção
-      },
-    },
+    minify: 'esbuild', // Usar esbuild (mais rápido e já incluído no Vite)
     rollupOptions: {
       output: {
         // Organizar os arquivos de output
