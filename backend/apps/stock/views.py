@@ -13,7 +13,8 @@ from apps.products.models import Product
 class StockMovementViewSet(viewsets.ModelViewSet):
     """ViewSet para gerenciar movimentações de estoque"""
     queryset = StockMovement.objects.select_related('product', 'user').all()
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend,
+                       filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['movement_type', 'product', 'user']
     search_fields = ['product__name', 'product__sku', 'reason', 'notes']
     ordering_fields = ['created_at', 'quantity']
@@ -32,18 +33,18 @@ class StockMovementViewSet(viewsets.ModelViewSet):
         total_value = Product.objects.aggregate(
             total=Sum(F('price') * F('quantity'))
         )['total'] or 0
-        
+
         low_stock_count = Product.objects.filter(
             quantity__lte=F('min_quantity')
         ).count()
-        
+
         out_of_stock_count = Product.objects.filter(quantity=0).count()
-        
+
         # Movimentações recentes (últimos 7 dias)
         recent_movements = self.get_queryset().filter(
             created_at__gte=timezone.now() - timedelta(days=7)
         )[:10]
-        
+
         summary_data = {
             'total_products': total_products,
             'total_value': total_value,
@@ -51,7 +52,7 @@ class StockMovementViewSet(viewsets.ModelViewSet):
             'out_of_stock_count': out_of_stock_count,
             'recent_movements': recent_movements,
         }
-        
+
         serializer = StockSummarySerializer(summary_data)
         return Response(serializer.data)
 
@@ -63,7 +64,7 @@ class StockMovementViewSet(viewsets.ModelViewSet):
             count=Count('id'),
             total_quantity=Sum('quantity')
         )
-        
+
         # Movimentações por dia (últimos 30 dias)
         thirty_days_ago = timezone.now() - timedelta(days=30)
         daily_movements = self.get_queryset().filter(
@@ -73,10 +74,8 @@ class StockMovementViewSet(viewsets.ModelViewSet):
         ).values('day').annotate(
             count=Count('id')
         ).order_by('day')
-        
+
         return Response({
             'movements_by_type': list(movements_by_type),
             'daily_movements': list(daily_movements),
         })
-
-

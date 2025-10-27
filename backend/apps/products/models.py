@@ -25,14 +25,16 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     sku = models.CharField(max_length=50, unique=True, verbose_name='SKU')
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='products')
+    category = models.ForeignKey(
+        Category, on_delete=models.CASCADE, related_name='products')
     price = models.DecimalField(
-        max_digits=10, 
-        decimal_places=2, 
+        max_digits=10,
+        decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
     quantity = models.PositiveIntegerField(default=0)
-    min_quantity = models.PositiveIntegerField(default=0, verbose_name='Quantidade Mínima')
+    min_quantity = models.PositiveIntegerField(
+        default=0, verbose_name='Quantidade Mínima')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -60,4 +62,3 @@ class Product(models.Model):
             return 'Estoque baixo'
         else:
             return 'Em estoque'
-

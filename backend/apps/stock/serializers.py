@@ -9,7 +9,8 @@ class StockMovementSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_sku = serializers.CharField(source='product.sku', read_only=True)
     user_name = serializers.CharField(source='user.full_name', read_only=True)
-    movement_type_display = serializers.CharField(source='get_movement_type_display', read_only=True)
+    movement_type_display = serializers.CharField(
+        source='get_movement_type_display', read_only=True)
 
     class Meta:
         model = StockMovement
@@ -31,7 +32,8 @@ class StockMovementListSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_sku = serializers.CharField(source='product.sku', read_only=True)
     user_name = serializers.CharField(source='user.full_name', read_only=True)
-    movement_type_display = serializers.CharField(source='get_movement_type_display', read_only=True)
+    movement_type_display = serializers.CharField(
+        source='get_movement_type_display', read_only=True)
 
     class Meta:
         model = StockMovement
@@ -48,5 +50,3 @@ class StockSummarySerializer(serializers.Serializer):
     low_stock_count = serializers.IntegerField()
     out_of_stock_count = serializers.IntegerField()
     recent_movements = StockMovementListSerializer(many=True)
-
-

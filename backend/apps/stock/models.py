@@ -6,19 +6,21 @@ from apps.users.models import User
 
 class StockMovement(models.Model):
     """Modelo para movimentações de estoque"""
-    
+
     MOVEMENT_TYPES = [
         ('in', 'Entrada'),
         ('out', 'Saída'),
         ('adjustment', 'Ajuste'),
     ]
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='stock_movements')
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='stock_movements')
     movement_type = models.CharField(max_length=20, choices=MOVEMENT_TYPES)
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     reason = models.CharField(max_length=200)
     notes = models.TextField(blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stock_movements')
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='stock_movements')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -40,10 +42,9 @@ class StockMovement(models.Model):
         if self.movement_type == 'in':
             self.product.quantity += self.quantity
         elif self.movement_type == 'out':
-            self.product.quantity = max(0, self.product.quantity - self.quantity)
+            self.product.quantity = max(
+                0, self.product.quantity - self.quantity)
         elif self.movement_type == 'adjustment':
             self.product.quantity = self.quantity
-        
+
         self.product.save(update_fields=['quantity'])
-
-

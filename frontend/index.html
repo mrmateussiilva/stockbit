@@ -4,11 +4,95 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tecidos & Papéis - Sistema de Gestão de Estoque</title>
+    
+    <!-- Meta tags básicas -->
+    <title>Stockbit - Sistema de Gestão de Estoque</title>
+    <meta name="description" content="Sistema moderno de gestão de estoque desenvolvido com Django REST Framework, React e TailwindCSS" />
+    <meta name="keywords" content="estoque, gestão, inventário, produtos, sistema" />
+    <meta name="author" content="Stockbit Team" />
+    
+    <!-- Meta tags para PWA -->
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Stockbit" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Stockbit" />
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Ícones para diferentes dispositivos -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icons/icon-120x120.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/icons/icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/icons/icon-76x76.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="60x60" href="/icons/icon-60x60.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/icons/icon-57x57.png" />
+    
+    <!-- Meta tags para redes sociais -->
+    <meta property="og:title" content="Stockbit - Sistema de Gestão de Estoque" />
+    <meta property="og:description" content="Sistema moderno de gestão de estoque desenvolvido com Django REST Framework, React e TailwindCSS" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://stockbit.example.com" />
+    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:site_name" content="Stockbit" />
+    
+    <!-- Meta tags para Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Stockbit - Sistema de Gestão de Estoque" />
+    <meta name="twitter:description" content="Sistema moderno de gestão de estoque desenvolvido com Django REST Framework, React e TailwindCSS" />
+    <meta name="twitter:image" content="/icons/icon-512x512.png" />
+    
+    <!-- Meta tags para segurança -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- Preload de recursos críticos -->
+    <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin />
+    
+    <!-- Meta tags para acessibilidade -->
+    <meta name="color-scheme" content="light" />
+    
+    <!-- Meta tags para performance -->
+    <meta name="format-detection" content="telephone=no" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Script para PWA -->
+    <script>
+      // Registrar service worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registrado: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW falhou: ', registrationError);
+            });
+        });
+      }
+      
+      // Detectar instalação do PWA
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('PWA pode ser instalado');
+        e.preventDefault();
+      });
+      
+      // Detectar quando o PWA foi instalado
+      window.addEventListener('appinstalled', (evt) => {
+        console.log('PWA foi instalado');
+      });
+    </script>
   </body>
 </html>
 

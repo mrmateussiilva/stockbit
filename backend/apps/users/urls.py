@@ -5,7 +5,11 @@ from .views import (
     register,
     profile,
     update_profile,
-    logout
+    logout,
+    forgot_password,
+    reset_password,
+    change_password,
+    verify_email
 )
 
 urlpatterns = [
@@ -15,5 +19,9 @@ urlpatterns = [
     path('profile/', profile, name='profile'),
     path('profile/update/', update_profile, name='update_profile'),
     path('logout/', logout, name='logout'),
+    path('forgot-password/', forgot_password, name='forgot_password'),
+    path('reset-password/', reset_password, name='reset_password'),
+    path('change-password/', change_password, name='change_password'),
+    path('verify-email/', verify_email, name='verify_email'),
 ]
 

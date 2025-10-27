@@ -1,7 +1,7 @@
+// Configuração do Vite para desenvolvimento com Docker
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -11,6 +11,11 @@ export default defineConfig({
       usePolling: true,
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'lucide-react', 'recharts'],
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+  },
 })
-
-

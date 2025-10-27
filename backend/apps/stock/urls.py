@@ -8,6 +8,6 @@ router.register(r'movements', StockMovementViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('export/movements/', export_movements_excel, name='export_movements_excel'),
+    path('export/movements/', export_movements_excel,
+         name='export_movements_excel'),
 ]
-

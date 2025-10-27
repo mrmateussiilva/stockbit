@@ -1,0 +1,53 @@
+# Docker Compose para desenvolvimento com hot reload otimizado
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-change-this-in-production}
+      - DEBUG=${DEBUG:-True}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1,0.0.0.0}
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "python manage.py makemigrations &&
+             python manage.py migrate &&
+             python seed_data.py &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - stockbit-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/dist
+    command: pnpm run dev -- --host 0.0.0.0
+    networks:
+      - stockbit-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+networks:
+  stockbit-network:
+    driver: bridge
+
+volumes:
+  node_modules:
+  static_files:
+

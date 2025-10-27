@@ -30,6 +30,29 @@ export const authService = {
     const response = await api.put('/auth/profile/update/', userData);
     return response.data;
   },
+
+  forgotPassword: async (email) => {
+    const response = await api.post('/auth/forgot-password/', { email });
+    return response.data;
+  },
+
+  resetPassword: async (email, newPassword, token) => {
+    const response = await api.post('/auth/reset-password/', { email, new_password: newPassword, token });
+    return response.data;
+  },
+
+  changePassword: async (oldPassword, newPassword) => {
+    const response = await api.post('/auth/change-password/', { 
+      old_password: oldPassword, 
+      new_password: newPassword 
+    });
+    return response.data;
+  },
+
+  verifyEmail: async (email, code) => {
+    const response = await api.post('/auth/verify-email/', { email, code });
+    return response.data;
+  },
 };
 
 // Serviços de produtos
@@ -246,3 +269,75 @@ export const supplierService = {
   },
 };
 
+// Serviços de vendas/pedidos
+export const salesService = {
+  getOrders: async (params = {}) => {
+    const response = await api.get('/sales/orders/', { params });
+    return response.data;
+  },
+
+  getOrder: async (id) => {
+    const response = await api.get(`/sales/orders/${id}/`);
+    return response.data;
+  },
+
+  createOrder: async (orderData) => {
+    const response = await api.post('/sales/orders/', orderData);
+    return response.data;
+  },
+
+  updateOrder: async (id, orderData) => {
+    const response = await api.put(`/sales/orders/${id}/`, orderData);
+    return response.data;
+  },
+
+  deleteOrder: async (id) => {
+    const response = await api.delete(`/sales/orders/${id}/`);
+    return response.data;
+  },
+
+  completeOrder: async (id) => {
+    const response = await api.post(`/sales/orders/${id}/complete/`);
+    return response.data;
+  },
+
+  cancelOrder: async (id) => {
+    const response = await api.post(`/sales/orders/${id}/cancel/`);
+    return response.data;
+  },
+
+  markOrderAsPaid: async (id) => {
+    const response = await api.post(`/sales/orders/${id}/mark_paid/`);
+    return response.data;
+  },
+
+  getOrdersSummary: async () => {
+    const response = await api.get('/sales/orders/summary/');
+    return response.data;
+  },
+
+  getRecentOrders: async () => {
+    const response = await api.get('/sales/orders/recent/');
+    return response.data;
+  },
+
+  getOrderItems: async (params = {}) => {
+    const response = await api.get('/sales/order-items/', { params });
+    return response.data;
+  },
+
+  createOrderItem: async (itemData) => {
+    const response = await api.post('/sales/order-items/', itemData);
+    return response.data;
+  },
+
+  updateOrderItem: async (id, itemData) => {
+    const response = await api.put(`/sales/order-items/${id}/`, itemData);
+    return response.data;
+  },
+
+  deleteOrderItem: async (id) => {
+    const response = await api.delete(`/sales/order-items/${id}/`);
+    return response.data;
+  },
+};

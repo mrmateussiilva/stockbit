@@ -4,7 +4,10 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import { SidebarProvider } from './services/SidebarContext';
 import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Dashboard from './pages/Dashboard';
+import Sales from './pages/Sales';
 import Products from './pages/Products';
 import Stock from './pages/Stock';
 import StockByCategory from './pages/StockByCategory';
@@ -36,6 +39,14 @@ const AppRoutes = () => {
         path="/login" 
         element={!isAuthenticated ? <Login /> : <Navigate to="/" />} 
       />
+      <Route 
+        path="/register" 
+        element={!isAuthenticated ? <Register /> : <Navigate to="/" />} 
+      />
+      <Route 
+        path="/forgot-password" 
+        element={!isAuthenticated ? <ForgotPassword /> : <Navigate to="/" />} 
+      />
       <Route
         path="/"
         element={
@@ -45,6 +56,7 @@ const AppRoutes = () => {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="sales" element={<Sales />} />
         <Route path="products" element={<Products />} />
         <Route path="categories" element={<Categories />} />
         <Route path="stock" element={<Stock />} />

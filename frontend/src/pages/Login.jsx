@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../services/AuthContext';
 import { authService } from '../services/services';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
@@ -111,6 +112,20 @@ const Login = () => {
               >
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </button>
+            </div>
+            
+            <div className="text-center space-y-2">
+              <div>
+                <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                  Esqueceu sua senha?
+                </Link>
+              </div>
+              <div>
+                Não tem uma conta?{' '}
+                <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
+                  Cadastre-se aqui
+                </Link>
+              </div>
             </div>
           </form>
 

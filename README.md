@@ -26,45 +26,59 @@ Sistema moderno de gestão de estoque desenvolvido com Django REST Framework, Re
 - Docker Compose
 - Git
 
-### Configuração Rápida
+### 🚀 Desenvolvimento com Docker (Recomendado)
 
-1. Clone o repositório
-2. Execute o script de configuração:
-
+1. Clone o repositório:
 ```bash
-./setup.sh
+git clone <repository-url>
+cd Stockbit
 ```
 
-### Configuração Manual
-
-1. Configure as variáveis de ambiente no arquivo `.env`:
-
-```env
-# Configurações do Banco de Dados MySQL (UOL Host)
-DB_HOST=meubanco.uol.com.br
-DB_PORT=3306
-DB_NAME=estoque_db
-DB_USER=usuario
-DB_PASSWORD=senha
-
-# Configurações do Django
-SECRET_KEY=django-insecure-change-this-in-production
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
-
-# Configurações do Frontend
-VITE_API_URL=http://localhost:8000/api
+2. Execute o script de desenvolvimento:
+```bash
+./dev.sh start
 ```
 
-2. Execute os comandos:
+3. Acesse a aplicação:
+- **Frontend**: http://localhost:5173
+- **Backend**: http://localhost:8000
+
+### 📋 Comandos Disponíveis
 
 ```bash
-# Subir os containers
-make up
+./dev.sh start     # Inicia todos os serviços
+./dev.sh stop      # Para os serviços
+./dev.sh restart   # Reinicia os serviços
+./dev.sh build     # Reconstrói as imagens
+./dev.sh logs      # Mostra os logs
+./dev.sh frontend  # Apenas o frontend
+./dev.sh backend   # Apenas o backend
+./dev.sh clean     # Remove containers e volumes
+./dev.sh help      # Mostra ajuda
+```
 
-# Ou usando docker-compose diretamente
+### 🔧 Configuração Manual
+
+1. Configure as variáveis de ambiente (opcional):
+```bash
+cp docker.env.example .env
+# Edite o arquivo .env conforme necessário
+```
+
+2. Execute com docker-compose:
+```bash
 docker-compose up --build
 ```
+
+### 🎨 Componentes Modernos
+
+O sistema agora inclui componentes modernos estilo shadcn/ui:
+- ✅ Design system completo
+- ✅ Componentes polidos e acessíveis
+- ✅ Animações e micro-interações
+- ✅ Tema claro/escuro
+- ✅ PWA (Progressive Web App)
+- ✅ Mobile-first design
 
 ### Acesso
 

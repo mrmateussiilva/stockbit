@@ -1,0 +1,45 @@
+# Docker Compose para produção
+version: '3.8'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=False
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+    volumes:
+      - static_files:/app/staticfiles
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             gunicorn inventory_api.wsgi:application --bind 0.0.0.0:8000"
+    networks:
+      - stockbit-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+    volumes:
+      - static_files:/usr/share/nginx/html
+    networks:
+      - stockbit-network
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+networks:
+  stockbit-network:
+    driver: bridge
+
+volumes:
+  static_files:
+

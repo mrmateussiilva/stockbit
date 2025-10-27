@@ -28,12 +28,16 @@ services:
       - "5173:5173"
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8000/api}
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    command: npm run dev -- --host 0.0.0.0
+      - /app/dist
+    command: pnpm run dev -- --host 0.0.0.0
     networks:
       - stockbit-network
+    stdin_open: true
+    tty: true
 
 networks:
   stockbit-network:
