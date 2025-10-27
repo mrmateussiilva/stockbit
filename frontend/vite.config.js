@@ -12,6 +12,12 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
+    allowedHosts: [
+      'localhost',
+      '.localhost',
+      'stockbit.finderbit.com.br',
+      '.finderbit.com.br',
+    ],
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'lucide-react', 'recharts'],

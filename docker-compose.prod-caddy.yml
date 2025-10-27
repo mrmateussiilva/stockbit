@@ -23,6 +23,7 @@ services:
     build: 
       context: ./backend
       dockerfile: Dockerfile.prod
+    image: stockbit-backend:latest
     expose:
       - "8000"
     environment:
@@ -52,6 +53,7 @@ services:
       dockerfile: Dockerfile.prod
       args:
         - VITE_API_URL=${VITE_API_URL}
+    image: stockbit-frontend:latest
     expose:
       - "80"
     volumes:

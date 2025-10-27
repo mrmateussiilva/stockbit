@@ -1,8 +1,8 @@
 # Configuração do Caddy para proxy reverso com HTTPS automático
 # O Caddy gera automaticamente certificados SSL gratuitos via Let's Encrypt
 
-# Troque seu-domínio.com pelo seu domínio real
-seu-domínio.com {
+# Domínio de produção
+stockbit.finderbit.com.br {
     # Proxy reverso para o frontend
     handle / {
         reverse_proxy frontend:80
