@@ -246,3 +246,41 @@ export const supplierService = {
   },
 };
 
+// Serviços de vendas
+export const salesService = {
+  getAll: async (params = {}) => {
+    const response = await api.get('/sales/orders/', { params });
+    return response.data;
+  },
+
+  getById: async (id) => {
+    const response = await api.get(`/sales/orders/${id}/`);
+    return response.data;
+  },
+
+  create: async (data) => {
+    const response = await api.post('/sales/orders/', data);
+    return response.data;
+  },
+
+  update: async (id, data) => {
+    const response = await api.put(`/sales/orders/${id}/`, data);
+    return response.data;
+  },
+
+  delete: async (id) => {
+    const response = await api.delete(`/sales/orders/${id}/`);
+    return response.data;
+  },
+
+  updateStatus: async (id, status) => {
+    const response = await api.patch(`/sales/orders/${id}/`, { status });
+    return response.data;
+  },
+
+  getStats: async () => {
+    const response = await api.get('/sales/orders/stats/');
+    return response.data;
+  },
+};
+
