@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Deletar Fornecedor{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'estoque:fornecedor_lista' %}">Fornecedores</a></li>
+            <li class="breadcrumb-item active">Deletar</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i>
+            Tem certeza que deseja deletar o fornecedor <strong>{{ fornecedor.nome }}</strong>?
+        </div>
+        
+        <div class="card bg-light mb-3">
+            <div class="card-body">
+                <h6>Informações do Fornecedor:</h6>
+                <p class="mb-1"><strong>Nome:</strong> {{ fornecedor.nome }}</p>
+                {% if fornecedor.cnpj %}
+                    <p class="mb-1"><strong>CNPJ:</strong> {{ fornecedor.cnpj }}</p>
+                {% endif %}
+                {% if fornecedor.telefone %}
+                    <p class="mb-1"><strong>Telefone:</strong> {{ fornecedor.telefone }}</p>
+                {% endif %}
+                {% if fornecedor.email %}
+                    <p class="mb-0"><strong>Email:</strong> {{ fornecedor.email }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash"></i> Sim, Deletar
+            </button>
+            <a href="{% url 'estoque:fornecedor_lista' %}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Saída de Produtos{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
+            <li class="breadcrumb-item active">Saída de Produtos</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-box-arrow-up"></i> Registrar Saída de Produtos</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Apenas produtos com estoque disponível serão exibidos na lista.
+                </div>
+                
+                <form method="post" id="saidaForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.produto.id_for_label }}" class="form-label">{{ form.produto.label }}</label>
+                        {{ form.produto }}
+                        <small class="form-text text-muted" id="estoque-display"></small>
+                        {% if form.produto.errors %}
+                            <div class="text-danger small">{{ form.produto.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.quantidade.id_for_label }}" class="form-label">{{ form.quantidade.label }}</label>
+                        {{ form.quantidade }}
+                        {% if form.quantidade.errors %}
+                            <div class="text-danger small">{{ form.quantidade.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.observacao.id_for_label }}" class="form-label">{{ form.observacao.label }}</label>
+                        {{ form.observacao }}
+                        {% if form.observacao.errors %}
+                            <div class="text-danger small">{{ form.observacao.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-check-circle"></i> Registrar Saída
+                    </button>
+                    <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const produtoSelect = document.getElementById('{{ form.produto.id_for_label }}');
+    const quantidadeInput = document.getElementById('{{ form.quantidade.id_for_label }}');
+    const estoqueDisplay = document.getElementById('estoque-display');
+    let estoqueAtual = 0;
+    let unidadeAtual = '';
+    
+    function atualizarEstoque() {
+        const produtoId = produtoSelect.value;
+        if (produtoId) {
+            fetch(`{% url 'estoque:api_produto_estoque' 0 %}`.replace('0', produtoId))
+                .then(response => response.json())
+                .then(data => {
+                    estoqueAtual = data.quantidade;
+                    unidadeAtual = data.unidade;
+                    estoqueDisplay.innerHTML = `<span class="badge bg-info">Estoque disponível: <strong>${data.quantidade}</strong> ${data.unidade}</span>`;
+                    validarQuantidade();
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar estoque:', error);
+                });
+        } else {
+            estoqueDisplay.textContent = '';
+            estoqueAtual = 0;
+        }
+    }
+    
+    function validarQuantidade() {
+        const quantidade = parseFloat(quantidadeInput.value) || 0;
+        
+        if (quantidade <= 0) {
+            quantidadeInput.classList.remove('is-invalid', 'is-valid');
+            estoqueDisplay.classList.remove('text-danger');
+            return;
+        }
+        
+        if (quantidade > estoqueAtual) {
+            quantidadeInput.classList.add('is-invalid');
+            quantidadeInput.classList.remove('is-valid');
+            estoqueDisplay.innerHTML = `<span class="badge bg-danger">Estoque insuficiente! Disponível: <strong>${estoqueAtual}</strong> ${unidadeAtual}</span>`;
+            quantidadeInput.setCustomValidity(
+                `Quantidade solicitada (${quantidade}) excede o estoque disponível (${estoqueAtual} ${unidadeAtual})`
+            );
+        } else {
+            quantidadeInput.classList.remove('is-invalid');
+            quantidadeInput.classList.add('is-valid');
+            estoqueDisplay.innerHTML = `<span class="badge bg-success">Estoque disponível: <strong>${estoqueAtual}</strong> ${unidadeAtual}</span>`;
+            quantidadeInput.setCustomValidity('');
+        }
+        
+        quantidadeInput.reportValidity();
+    }
+    
+    produtoSelect.addEventListener('change', atualizarEstoque);
+    
+    if (quantidadeInput) {
+        quantidadeInput.addEventListener('input', validarQuantidade);
+        quantidadeInput.addEventListener('blur', validarQuantidade);
+    }
+    
+    atualizarEstoque(); // Atualiza ao carregar a página
+});
+</script>
+{% endblock %}
+

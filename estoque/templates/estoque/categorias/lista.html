@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Categorias{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
+            <li class="breadcrumb-item active">Categorias</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-tags"></i> Categorias</h5>
+        <a href="{% url 'estoque:categoria_criar' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-circle"></i> Nova Categoria
+        </a>
+    </div>
+    <div class="card-body">
+        {% if categorias %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Descrição</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for categoria in categorias %}
+                        <tr>
+                            <td><strong>{{ categoria.nome }}</strong></td>
+                            <td>{{ categoria.descricao|default:"—" }}</td>
+                            <td class="text-center">
+                                <a href="{% url 'estoque:categoria_editar' categoria.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'estoque:categoria_deletar' categoria.pk %}" class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-tags"></i>
+                <h5>Nenhuma categoria cadastrada</h5>
+                <p class="text-muted mb-3">Comece criando sua primeira categoria.</p>
+                <a href="{% url 'estoque:categoria_criar' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Criar Primeira Categoria
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

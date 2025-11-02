@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Relatórios{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Relatório de Movimentações</h5>
+        <a href="?exportar=xlsx{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}" class="btn btn-success btn-sm">
+            <i class="bi bi-file-earmark-excel"></i> Exportar XLSX
+        </a>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-md-4">
+                <label for="data_inicio" class="form-label">Data Início</label>
+                <input type="date" name="data_inicio" id="data_inicio" class="form-control" 
+                       value="{{ data_inicio|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label for="data_fim" class="form-label">Data Fim</label>
+                <input type="date" name="data_fim" id="data_fim" class="form-control" 
+                       value="{{ data_fim|date:'Y-m-d' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-funnel"></i> Filtrar
+                </button>
+            </div>
+        </form>
+        
+        <!-- Resumo -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card stat-card success">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-1">Total de Entradas</h6>
+                        <h3 class="mb-0">{{ entradas_total }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card danger">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-1">Total de Saídas</h6>
+                        <h3 class="mb-0">{{ saidas_total }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-1">Saldo Final</h6>
+                        <h3 class="mb-0">{{ saldo_final }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Gráfico de Uso por Mês</h5>
+    </div>
+    <div class="card-body">
+        {% if meses %}
+            <canvas id="graficoUso"></canvas>
+        {% else %}
+            <p class="text-muted text-center">Não há dados para o período selecionado.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Tabela de Movimentações -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-list"></i> Movimentações do Período</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover table-sm">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Produto</th>
+                        <th class="text-end">Quantidade</th>
+                        <th class="text-end">Custo Unitário</th>
+                        <th>Usuário</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in movimentacoes %}
+                    <tr>
+                        <td>{{ mov.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if mov.tipo == 'ENTRADA' %}
+                                <span class="badge bg-success">{{ mov.get_tipo_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ mov.get_tipo_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ mov.produto.nome }}</td>
+                        <td class="text-end">{{ mov.quantidade }} {{ mov.produto.get_unidade_display }}</td>
+                        <td class="text-end">R$ {{ mov.custo_unitario|floatformat:2 }}</td>
+                        <td>{{ mov.usuario.username|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Nenhuma movimentação no período selecionado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+{% if meses and datasets %}
+const ctx = document.getElementById('graficoUso');
+if (ctx) {
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ meses }},
+            datasets: {{ datasets }}
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Uso de Materiais por Mês'
+                },
+                legend: {
+                    position: 'right'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+{% endif %}
+</script>
+{% endblock %}
+

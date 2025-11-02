@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Gerar Pedido para WhatsApp{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
+            <li class="breadcrumb-item active">Pedido WhatsApp</li>
+        </ol>
+    </nav>
+</div>
+
+{% if produtos_selecionados %}
+    <!-- Resumo do pedido -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-check-circle"></i> Pedido Gerado</h5>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <strong>Total:</strong> <span class="h4">R$ {{ total|floatformat:2 }}</span>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-success btn-lg">
+                    <i class="bi bi-whatsapp"></i> Enviar pelo WhatsApp
+                </a>
+                <a href="{% url 'estoque:pedido_whatsapp' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Voltar e Editar
+                </a>
+            </div>
+            
+            <hr>
+            
+            <h6>Pré-visualização da mensagem:</h6>
+            <div class="bg-light p-3 rounded" style="font-family: monospace; white-space: pre-wrap; font-size: 0.9rem;">{{ mensagem }}</div>
+        </div>
+    </div>
+{% else %}
+    <!-- Formulário de seleção -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-whatsapp"></i> Gerar Pedido para WhatsApp</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if produtos_por_categoria %}
+                    {% for categoria, produtos in produtos_por_categoria.items %}
+                        <div class="mb-4">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="bi bi-tag"></i> {{ categoria }}
+                            </h6>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 50px;">Sel.</th>
+                                            <th>Produto</th>
+                                            <th>Código</th>
+                                            <th class="text-end">Estoque</th>
+                                            <th class="text-end">Valor Unit.</th>
+                                            <th class="text-end" style="width: 150px;">Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for produto in produtos %}
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" 
+                                                       class="form-check-input produto-checkbox" 
+                                                       data-produto="{{ produto.pk }}"
+                                                       id="check_{{ produto.pk }}">
+                                            </td>
+                                            <td>{{ produto.nome }}</td>
+                                            <td><code>{{ produto.codigo }}</code></td>
+                                            <td class="text-end">
+                                                <span class="badge bg-info">{{ produto.quantidade_estoque }} {{ produto.get_unidade_display }}</span>
+                                            </td>
+                                            <td class="text-end">R$ {{ produto.custo_unitario|floatformat:2 }}</td>
+                                            <td>
+                                                <input type="number" 
+                                                       name="qtd_{{ produto.pk }}" 
+                                                       id="qtd_{{ produto.pk }}"
+                                                       class="form-control form-control-sm quantidade-input" 
+                                                       step="0.01" 
+                                                       min="0" 
+                                                       max="{{ produto.quantidade_estoque }}"
+                                                       data-max="{{ produto.quantidade_estoque }}"
+                                                       data-valor="{{ produto.custo_unitario }}"
+                                                       disabled
+                                                       placeholder="0">
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="card bg-light mt-4">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <strong>Total de itens selecionados:</strong> <span id="total-itens">0</span>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <strong>Valor total:</strong> <span class="h5" id="valor-total">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-whatsapp"></i> Gerar Link do WhatsApp
+                        </button>
+                        <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h5>Nenhum produto com estoque</h5>
+                        <p class="text-muted mb-3">Não há produtos disponíveis para gerar pedido.</p>
+                        <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.produto-checkbox');
+        const quantidadeInputs = document.querySelectorAll('.quantidade-input');
+        
+        function atualizarTotal() {
+            let totalItens = 0;
+            let valorTotal = 0;
+            
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    const produtoId = checkbox.dataset.produto;
+                    const qtdInput = document.getElementById('qtd_' + produtoId);
+                    const quantidade = parseFloat(qtdInput.value) || 0;
+                    const valor = parseFloat(qtdInput.dataset.valor) || 0;
+                    
+                    if (quantidade > 0) {
+                        totalItens += quantidade;
+                        valorTotal += quantidade * valor;
+                    }
+                }
+            });
+            
+            document.getElementById('total-itens').textContent = totalItens.toFixed(2);
+            document.getElementById('valor-total').textContent = 'R$ ' + valorTotal.toFixed(2).replace('.', ',');
+        }
+        
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const produtoId = this.dataset.produto;
+                const qtdInput = document.getElementById('qtd_' + produtoId);
+                
+                if (this.checked) {
+                    qtdInput.disabled = false;
+                    qtdInput.focus();
+                    qtdInput.value = '';
+                } else {
+                    qtdInput.disabled = true;
+                    qtdInput.value = '';
+                }
+                atualizarTotal();
+            });
+        });
+        
+        quantidadeInputs.forEach(function(input) {
+            input.addEventListener('input', function() {
+                const max = parseFloat(this.dataset.max) || 0;
+                const value = parseFloat(this.value) || 0;
+                
+                if (value > max) {
+                    this.value = max;
+                    alert('Quantidade não pode ser maior que o estoque disponível (' + max + ')');
+                }
+                atualizarTotal();
+            });
+        });
+    });
+    </script>
+{% endif %}
+{% endblock %}
+

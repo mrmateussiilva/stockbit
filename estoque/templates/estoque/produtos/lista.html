@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Produtos{% endblock %}
+
+{% block content %}
+<div class="breadcrumb-container">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
+            <li class="breadcrumb-item active">Produtos</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
+        <h5 class="mb-0"><i class="bi bi-box"></i> Lista de Produtos</h5>
+        <div class="d-flex gap-2">
+            <a href="{% url 'estoque:produto_criar' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Novo Produto</span>
+            </a>
+            <a href="?exportar=xlsx{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-success btn-sm">
+                <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-md-inline">Exportar</span>
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <form method="get" class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <label for="categoria" class="form-label">Categoria</label>
+                <select name="categoria" id="categoria" class="form-select">
+                    <option value="">Todas</option>
+                    {% for cat in categorias %}
+                        <option value="{{ cat.id }}" {% if categoria_selecionada == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="busca" class="form-label">Buscar</label>
+                <input type="text" name="busca" id="busca" class="form-control" 
+                       placeholder="Nome, código ou NCM..." value="{{ busca }}">
+            </div>
+            <div class="col-12 col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> <span class="d-none d-md-inline">Filtrar</span>
+                </button>
+            </div>
+        </form>
+        
+        <!-- Tabela -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            <a href="?ordenar={% if ordenar == 'codigo' %}-codigo{% else %}codigo{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}" 
+                               class="text-decoration-none text-dark">
+                                Código 
+                                {% if ordenar == 'codigo' %}<i class="bi bi-arrow-up"></i>{% elif ordenar == '-codigo' %}<i class="bi bi-arrow-down"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th>
+                            <a href="?ordenar={% if ordenar == 'nome' %}-nome{% else %}nome{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}" 
+                               class="text-decoration-none text-dark">
+                                Nome
+                                {% if ordenar == 'nome' %}<i class="bi bi-arrow-up"></i>{% elif ordenar == '-nome' %}<i class="bi bi-arrow-down"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th>Categoria</th>
+                        <th>Unidade</th>
+                        <th class="text-end">
+                            <a href="?ordenar={% if ordenar == 'quantidade' %}-quantidade{% else %}quantidade{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}" 
+                               class="text-decoration-none text-dark">
+                                Quantidade
+                                {% if ordenar == 'quantidade' %}<i class="bi bi-arrow-up"></i>{% elif ordenar == '-quantidade' %}<i class="bi bi-arrow-down"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th class="text-end">
+                            <a href="?ordenar={% if ordenar == 'custo' %}-custo{% else %}custo{% endif %}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}" 
+                               class="text-decoration-none text-dark">
+                                Custo Unitário
+                                {% if ordenar == 'custo' %}<i class="bi bi-arrow-up"></i>{% elif ordenar == '-custo' %}<i class="bi bi-arrow-down"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th class="text-end">Valor Total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    <tr>
+                        <td><strong>{{ produto.codigo }}</strong></td>
+                        <td>{{ produto.nome }}</td>
+                        <td><span class="badge bg-secondary">{{ produto.categoria.nome }}</span></td>
+                        <td>{{ produto.get_unidade_display }}</td>
+                        <td class="text-end">
+                            {% if produto.quantidade_estoque <= 5 %}
+                                <span class="badge bg-warning text-dark">{{ produto.quantidade_estoque }}</span>
+                            {% else %}
+                                {{ produto.quantidade_estoque }}
+                            {% endif %}
+                        </td>
+                        <td class="text-end">R$ {{ produto.custo_unitario|floatformat:2 }}</td>
+                        <td class="text-end"><strong>R$ {{ produto.valor_total_estoque|floatformat:2 }}</strong></td>
+                        <td>
+                            <a href="{% url 'estoque:produto_editar' produto.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <h5>Nenhum produto encontrado</h5>
+                                <p class="text-muted mb-3">Tente ajustar os filtros ou adicionar novos produtos.</p>
+                                <a href="{% url 'estoque:produto_criar' %}" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Adicionar Primeiro Produto
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginação -->
+        {% if produtos.has_other_pages %}
+        <nav aria-label="Paginação de produtos">
+            <ul class="pagination justify-content-center mt-4">
+                {% if produtos.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">Primeira</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ produtos.previous_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">Anterior</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Página {{ produtos.number }} de {{ produtos.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if produtos.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ produtos.next_page_number }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">Próxima</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ produtos.paginator.num_pages }}{% if categoria_selecionada %}&categoria={{ categoria_selecionada }}{% endif %}{% if busca %}&busca={{ busca }}{% endif %}{% if ordenar %}&ordenar={{ ordenar }}{% endif %}">Última</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

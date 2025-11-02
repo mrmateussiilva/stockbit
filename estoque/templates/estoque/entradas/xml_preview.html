@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Confirmar Entrada via XML{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-check"></i> Produtos Encontrados no XML</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Revise os produtos abaixo. Produtos não encontrados podem ser criados automaticamente 
+                    marcando a opção correspondente.
+                </div>
+                
+                <form method="post" action="{% url 'estoque:entrada_xml_confirmar' %}">
+                    {% csrf_token %}
+                    
+                    {% if produtos_processados %}
+                    <h6 class="mt-4 mb-3">Produtos Encontrados no Cadastro</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Nome</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário</th>
+                                    <th>Unidade</th>
+                                    <th>Produto no Sistema</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in produtos_processados %}
+                                <tr>
+                                    <td>{{ item.codigo }}</td>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.quantidade }}</td>
+                                    <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                                    <td>{{ item.unidade }}</td>
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ item.produto_db.nome|truncatechars:30 }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                    
+                    {% if produtos_nao_encontrados %}
+                    <h6 class="mt-4 mb-3">Produtos Não Encontrados (Novos)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-warning">
+                                <tr>
+                                    <th>Criar?</th>
+                                    <th>Código</th>
+                                    <th>Nome</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário</th>
+                                    <th>Unidade</th>
+                                    <th>NCM</th>
+                                    <th>EAN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in produtos_nao_encontrados %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="criar_{{ item.codigo }}" class="form-check-input" checked>
+                                    </td>
+                                    <td>{{ item.codigo }}</td>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.quantidade }}</td>
+                                    <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                                    <td>{{ item.unidade }}</td>
+                                    <td>{{ item.ncm }}</td>
+                                    <td>{{ item.ean }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-check-circle"></i> Confirmar e Processar Entrada
+                        </button>
+                        <a href="{% url 'estoque:entrada_xml' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

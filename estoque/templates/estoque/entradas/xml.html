@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Entrada via XML{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-code"></i> Entrada via XML de NF-e</h5>
+                <a href="{% url 'estoque:entrada_manual' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-pencil"></i> Entrada Manual
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    Envie o arquivo XML da Nota Fiscal Eletrônica. O sistema irá extrair automaticamente 
+                    os produtos e permitir vinculá-los ao cadastro existente ou criar novos produtos.
+                </div>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.arquivo_xml.id_for_label }}" class="form-label">{{ form.arquivo_xml.label }}</label>
+                        {{ form.arquivo_xml }}
+                        {% if form.arquivo_xml.errors %}
+                            <div class="text-danger small">{{ form.arquivo_xml.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Selecione o arquivo XML da NF-e (.xml)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.fornecedor.id_for_label }}" class="form-label">{{ form.fornecedor.label }}</label>
+                        {{ form.fornecedor }}
+                        <small class="form-text text-muted">Opcional - Selecione o fornecedor da nota</small>
+                        {% if form.fornecedor.errors %}
+                            <div class="text-danger small">{{ form.fornecedor.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Processar XML
+                    </button>
+                    <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
