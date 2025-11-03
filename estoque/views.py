@@ -397,7 +397,7 @@ def entrada_manual(request):
                 f'Entrada de {movimentacao.quantidade} {movimentacao.produto.unidade} '
                 f'de "{movimentacao.produto.nome}" registrada com sucesso!'
             )
-            return redirect('entrada_manual')
+            return redirect('estoque:entrada_manual')
     else:
         form = EntradaManualForm()
     
@@ -546,7 +546,7 @@ def saida_criar(request):
                 f'Saída de {movimentacao.quantidade} {movimentacao.produto.unidade} '
                 f'de "{movimentacao.produto.nome}" registrada com sucesso!'
             )
-            return redirect('saida_criar')
+            return redirect('estoque:saida_criar')
     else:
         form = SaidaForm()
     

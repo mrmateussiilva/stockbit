@@ -76,7 +76,9 @@ WSGI_APPLICATION = 'stockbit.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# Usa PostgreSQL em produção, SQLite em desenvolvimento
+# Prioridade: DATABASE_URL > PostgreSQL env vars > SQLite (dev)
+USE_POSTGRESQL = config('POSTGRES_HOST', default=None) or config('DATABASE_URL', default=None)
+
 if config('DATABASE_URL', default=None):
     import dj_database_url
     DATABASES = {
@@ -86,21 +88,24 @@ if config('DATABASE_URL', default=None):
             conn_health_checks=True,
         )
     }
-else:
+elif USE_POSTGRESQL:
     # Configuração para PostgreSQL via variáveis de ambiente
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': config('POSTGRES_DB', default='stockbit'),
             'USER': config('POSTGRES_USER', default='stockbit'),
-            'PASSWORD': config('POSTGRES_PASSWORD', default='stockbit_password'),
+            'PASSWORD': config('POSTGRES_PASSWORD', default='stockbit_password_change_me'),
             'HOST': config('POSTGRES_HOST', default='db'),
             'PORT': config('POSTGRES_PORT', default='5432'),
             'OPTIONS': {
                 'connect_timeout': 10,
             },
         }
-    } if not DEBUG else {
+    }
+else:
+    # SQLite apenas em desenvolvimento quando PostgreSQL não está configurado
+    DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',

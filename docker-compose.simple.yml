@@ -36,8 +36,12 @@ services:
     env_file:
       - .env.production
     environment:
+      # Garante que as credenciais do PostgreSQL sejam passadas para o container web
       - POSTGRES_HOST=db
       - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-stockbit}
+      - POSTGRES_USER=${POSTGRES_USER:-stockbit}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-stockbit_password_change_me}
     depends_on:
       db:
         condition: service_healthy
