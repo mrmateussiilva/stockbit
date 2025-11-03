@@ -25,6 +25,16 @@ echo "PostgreSQL está pronto!"
 export USER=stockbit
 export HOME=/home/stockbit
 
+# Garante que os diretórios existam
+mkdir -p /app/staticfiles /app/media
+
+# Tenta ajustar permissões (pode falhar se o volume foi criado pelo root)
+# Mas tentamos criar os subdiretórios que precisamos
+mkdir -p /app/staticfiles/admin /app/staticfiles/css /app/staticfiles/js /app/media 2>/dev/null || true
+
+# Se ainda assim falhar, o collectstatic vai falhar mas a aplicação continuará
+# Os arquivos estáticos podem ser coletados manualmente depois
+
 # Executa migrações
 echo "Executando migrações..."
 python manage.py migrate --noinput

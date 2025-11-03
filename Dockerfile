@@ -35,6 +35,10 @@ RUN useradd -m -u 1000 stockbit && \
     chown -R stockbit:stockbit /app && \
     chmod +x /entrypoint.sh
 
+# Cria diretórios que serão montados como volumes e garante permissões
+RUN mkdir -p /app/staticfiles /app/media && \
+    chown -R stockbit:stockbit /app/staticfiles /app/media
+
 # Muda para usuário não-root antes do entrypoint
 USER stockbit
 
