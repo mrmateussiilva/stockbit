@@ -16,7 +16,44 @@
                     marcando a opção correspondente.
                 </div>
                 
-                <form method="post" action="{% url 'estoque:entrada_xml_confirmar' %}">
+                {% if produtos_processados or produtos_nao_encontrados %}
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-1">Total de Produtos</h6>
+                                <h4 class="mb-0">{{ total_produtos }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success bg-opacity-10">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-1">Encontrados</h6>
+                                <h4 class="mb-0 text-success">{{ total_encontrados }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-warning bg-opacity-10">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-1">Novos</h6>
+                                <h4 class="mb-0 text-warning">{{ total_novos }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-primary bg-opacity-10">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted mb-1">Valor Total</h6>
+                                <h4 class="mb-0 text-primary">R$ {{ valor_total|floatformat:2 }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <form method="post" action="{% url 'estoque:entrada_xml_confirmar' %}" id="form-confirmar">
                     {% csrf_token %}
                     
                     {% if produtos_processados %}
@@ -29,6 +66,7 @@
                                     <th>Nome</th>
                                     <th>Quantidade</th>
                                     <th>Valor Unitário</th>
+                                    <th>Total</th>
                                     <th>Unidade</th>
                                     <th>Produto no Sistema</th>
                                 </tr>
@@ -40,6 +78,7 @@
                                     <td>{{ item.nome }}</td>
                                     <td>{{ item.quantidade }}</td>
                                     <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                                    <td>R$ {{ item.valor_total|floatformat:2 }}</td>
                                     <td>{{ item.unidade }}</td>
                                     <td>
                                         <span class="badge bg-success">
@@ -54,7 +93,17 @@
                     {% endif %}
                     
                     {% if produtos_nao_encontrados %}
-                    <h6 class="mt-4 mb-3">Produtos Não Encontrados (Novos)</h6>
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                        <h6 class="mb-0">Produtos Não Encontrados (Novos)</h6>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btn-selecionar-todos">
+                                <i class="bi bi-check-square"></i> Selecionar Todos
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-deselecionar-todos">
+                                <i class="bi bi-square"></i> Deselecionar Todos
+                            </button>
+                        </div>
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-sm table-bordered">
                             <thead class="table-warning">
@@ -64,6 +113,7 @@
                                     <th>Nome</th>
                                     <th>Quantidade</th>
                                     <th>Valor Unitário</th>
+                                    <th>Total</th>
                                     <th>Unidade</th>
                                     <th>NCM</th>
                                     <th>EAN</th>
@@ -73,12 +123,13 @@
                                 {% for item in produtos_nao_encontrados %}
                                 <tr>
                                     <td>
-                                        <input type="checkbox" name="criar_{{ item.codigo }}" class="form-check-input" checked>
+                                        <input type="checkbox" name="criar_{{ item.codigo }}" class="form-check-input checkbox-criar" checked>
                                     </td>
                                     <td>{{ item.codigo }}</td>
                                     <td>{{ item.nome }}</td>
                                     <td>{{ item.quantidade }}</td>
                                     <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                                    <td>R$ {{ item.valor_total|floatformat:2 }}</td>
                                     <td>{{ item.unidade }}</td>
                                     <td>{{ item.ncm }}</td>
                                     <td>{{ item.ean }}</td>
@@ -90,8 +141,9 @@
                     {% endif %}
                     
                     <div class="mt-4">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-check-circle"></i> Confirmar e Processar Entrada
+                        <button type="submit" class="btn btn-success btn-lg" id="btn-confirmar">
+                            <i class="bi bi-check-circle"></i> <span>Confirmar e Processar Entrada</span>
+                            <span class="spinner-border spinner-border-sm ms-2 d-none" id="spinner-confirmar" role="status" aria-hidden="true"></span>
                         </button>
                         <a href="{% url 'estoque:entrada_xml' %}" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Voltar
@@ -102,5 +154,41 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Botões Selecionar/Deselecionar Todos
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnSelecionarTodos = document.getElementById('btn-selecionar-todos');
+        const btnDeselecionarTodos = document.getElementById('btn-deselecionar-todos');
+        const checkboxes = document.querySelectorAll('.checkbox-criar');
+        
+        if (btnSelecionarTodos && btnDeselecionarTodos) {
+            btnSelecionarTodos.addEventListener('click', function() {
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = true;
+                });
+            });
+            
+            btnDeselecionarTodos.addEventListener('click', function() {
+                checkboxes.forEach(function(checkbox) {
+                    checkbox.checked = false;
+                });
+            });
+        }
+        
+        // Loading indicator no formulário de confirmação
+        const formConfirmar = document.getElementById('form-confirmar');
+        if (formConfirmar) {
+            formConfirmar.addEventListener('submit', function() {
+                const btn = document.getElementById('btn-confirmar');
+                const spinner = document.getElementById('spinner-confirmar');
+                if (btn && spinner) {
+                    btn.disabled = true;
+                    spinner.classList.remove('d-none');
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
 

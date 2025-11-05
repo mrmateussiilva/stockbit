@@ -230,7 +230,9 @@ class XMLUploadForm(forms.Form):
         label='Arquivo XML da NF-e',
         widget=forms.FileInput(attrs={
             'class': 'form-control',
-            'accept': '.xml'
+            'accept': '.xml',
+            'style': 'cursor: pointer;',
+            'id': 'id_arquivo_xml'
         })
     )
     fornecedor = forms.ModelChoiceField(
@@ -239,4 +241,55 @@ class XMLUploadForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'}),
         label='Fornecedor'
     )
+    
+    def clean_arquivo_xml(self):
+        """Valida se o arquivo é um XML válido"""
+        arquivo = self.cleaned_data.get('arquivo_xml')
+        
+        if not arquivo:
+            raise forms.ValidationError('Por favor, selecione um arquivo XML.')
+        
+        # Verifica extensão
+        if not arquivo.name.lower().endswith('.xml'):
+            raise forms.ValidationError('O arquivo deve ter extensão .xml')
+        
+        # Verifica tamanho (máximo 10MB)
+        if arquivo.size > 10 * 1024 * 1024:
+            raise forms.ValidationError('O arquivo é muito grande. Tamanho máximo: 10MB')
+        
+        # Tenta fazer um parse básico para verificar se é XML válido
+        try:
+            import xml.etree.ElementTree as ET
+            
+            # Salva posição atual
+            pos_atual = arquivo.tell() if hasattr(arquivo, 'tell') else 0
+            
+            # Tenta ler e parsear
+            if hasattr(arquivo, 'seek'):
+                arquivo.seek(0)
+            
+            try:
+                tree = ET.parse(arquivo)
+                root = tree.getroot()
+                # Verifica se parece ser uma NF-e
+                if 'nfe' not in root.tag.lower() and 'nfe' not in str(root.tag).lower():
+                    # Não é crítico, apenas avisa
+                    pass
+            except ET.ParseError:
+                # Tenta ler como string
+                if hasattr(arquivo, 'seek'):
+                    arquivo.seek(0)
+                content = arquivo.read()
+                if isinstance(content, bytes):
+                    content = content.decode('utf-8', errors='ignore')
+                ET.fromstring(content)
+            
+            # Restaura posição
+            if hasattr(arquivo, 'seek'):
+                arquivo.seek(pos_atual)
+                
+        except Exception as e:
+            raise forms.ValidationError(f'O arquivo não parece ser um XML válido: {str(e)}')
+        
+        return arquivo
 

@@ -8,6 +8,7 @@ from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 import json
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -419,13 +420,16 @@ def entrada_xml(request):
                 
                 if not produtos_xml:
                     messages.warning(request, 'Nenhum produto encontrado no XML.')
-                    return redirect('entrada_xml')
+                    return redirect('estoque:entrada_xml')
                 
                 # Prepara dados para exibição e criação
                 produtos_processados = []
                 produtos_nao_encontrados = []
                 
                 for produto_xml in produtos_xml:
+                    # Calcula valor total do item
+                    produto_xml['valor_total'] = produto_xml['quantidade'] * produto_xml['valor_unitario']
+                    
                     # Tenta encontrar produto existente
                     produto_db = encontrar_produto_por_codigo(
                         produto_xml['codigo'],
@@ -440,20 +444,51 @@ def entrada_xml(request):
                     else:
                         produtos_nao_encontrados.append(produto_xml)
                 
+                # Converte Decimal para float antes de salvar na sessão (JSON não serializa Decimal)
+                produtos_xml_serializaveis = []
+                for produto in produtos_xml:
+                    produto_serial = produto.copy()
+                    produto_serial['quantidade'] = float(produto['quantidade'])
+                    produto_serial['valor_unitario'] = float(produto['valor_unitario'])
+                    produto_serial['valor_total'] = float(produto.get('valor_total', produto['quantidade'] * produto['valor_unitario']))
+                    # Remove objetos que não podem ser serializados
+                    produto_serial.pop('produto_db', None)
+                    produtos_xml_serializaveis.append(produto_serial)
+                
                 # Salva na sessão para processamento posterior
-                request.session['produtos_xml'] = produtos_xml
+                request.session['produtos_xml'] = produtos_xml_serializaveis
                 request.session['fornecedor_id'] = fornecedor.id if fornecedor else None
+                
+                # Calcula totais para exibição
+                total_produtos = len(produtos_xml)
+                total_encontrados = len(produtos_processados)
+                total_novos = len(produtos_nao_encontrados)
+                valor_total = Decimal('0.00')
+                
+                for produto in produtos_xml:
+                    valor_total += produto['quantidade'] * produto['valor_unitario']
                 
                 context = {
                     'produtos_processados': produtos_processados,
                     'produtos_nao_encontrados': produtos_nao_encontrados,
                     'form': form,
+                    'total_produtos': total_produtos,
+                    'total_encontrados': total_encontrados,
+                    'total_novos': total_novos,
+                    'valor_total': valor_total,
                 }
                 
                 return render(request, 'estoque/entradas/xml_preview.html', context)
                 
-            except Exception as e:
+            except ValueError as e:
                 messages.error(request, f'Erro ao processar XML: {str(e)}')
+            except ET.ParseError as e:
+                messages.error(request, f'Erro ao fazer parse do XML: {str(e)}')
+            except Exception as e:
+                import traceback
+                messages.error(request, f'Erro inesperado ao processar XML: {str(e)}')
+                # Log do erro completo para debug
+                print(f"Erro completo ao processar XML: {traceback.format_exc()}")
     else:
         form = XMLUploadForm()
     
@@ -466,7 +501,30 @@ def entrada_xml_confirmar(request):
     if request.method == 'POST':
         produtos_xml = request.session.get('produtos_xml', [])
         fornecedor_id = request.session.get('fornecedor_id')
-        fornecedor = Supplier.objects.get(pk=fornecedor_id) if fornecedor_id else None
+        
+        # Verifica se há produtos na sessão
+        if not produtos_xml:
+            messages.error(request, 'Nenhum produto encontrado na sessão. Por favor, faça o upload do XML novamente.')
+            return redirect('estoque:entrada_xml')
+        
+        # Converte de volta para Decimal (vem da sessão como float)
+        produtos_xml_desserializados = []
+        for produto in produtos_xml:
+            produto_dec = produto.copy()
+            produto_dec['quantidade'] = Decimal(str(produto['quantidade']))
+            produto_dec['valor_unitario'] = Decimal(str(produto['valor_unitario']))
+            produto_dec['valor_total'] = Decimal(str(produto.get('valor_total', produto['quantidade'] * produto['valor_unitario'])))
+            produtos_xml_desserializados.append(produto_dec)
+        
+        produtos_xml = produtos_xml_desserializados
+        
+        # Busca fornecedor se fornecido
+        fornecedor = None
+        if fornecedor_id:
+            try:
+                fornecedor = Supplier.objects.get(pk=fornecedor_id)
+            except Supplier.DoesNotExist:
+                messages.warning(request, f'Fornecedor selecionado não foi encontrado. Continuando sem fornecedor.')
         
         produtos_criados = []
         movimentacoes_criadas = 0
@@ -488,7 +546,7 @@ def entrada_xml_confirmar(request):
                     categoria_padrao = Category.objects.first()
                     if not categoria_padrao:
                         messages.error(request, 'É necessário criar pelo menos uma categoria primeiro!')
-                        return redirect('entrada_xml')
+                        return redirect('estoque:entrada_xml')
                     
                     produto_db = Product.objects.create(
                         codigo=produto_xml['codigo'],
@@ -526,9 +584,9 @@ def entrada_xml_confirmar(request):
             f'{len(produtos_criados)} novo(s) produto(s) criado(s).'
         )
         
-        return redirect('entrada_xml')
+        return redirect('estoque:entrada_xml')
     
-    return redirect('entrada_xml')
+    return redirect('estoque:entrada_xml')
 
 
 # ============ SAÍDAS ============
