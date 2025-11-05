@@ -7,24 +7,40 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['codigo', 'nome', 'categoria', 'unidade', 'quantidade_estoque', 
-                  'custo_unitario', 'ncm', 'ean']
+                  'estoque_minimo', 'custo_unitario', 'ncm', 'ean']
         widgets = {
             'codigo': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': 'Deixe em branco para gerar automaticamente (PROD-0001)'
             }),
-            'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'categoria': forms.Select(attrs={'class': 'form-select'}),
-            'unidade': forms.Select(attrs={'class': 'form-select'}),
-            'quantidade_estoque': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
-            'custo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'nome': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'categoria': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'unidade': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'quantidade_estoque': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'step': '0.01'
+            }),
+            'estoque_minimo': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'step': '0.01'
+            }),
+            'custo_unitario': forms.NumberInput(attrs={
+                'class': 'w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'step': '0.01'
+            }),
             'ncm': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': '00000000',
                 'maxlength': '8'
             }),
             'ean': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': '7891234567890',
                 'maxlength': '13'
             }),
@@ -43,8 +59,13 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ['nome', 'descricao']
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'nome': forms.TextInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'descricao': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'rows': 3
+            }),
         }
 
 
@@ -55,25 +76,25 @@ class SupplierForm(forms.ModelForm):
         fields = ['nome', 'cnpj', 'telefone', 'email', 'endereco']
         widgets = {
             'nome': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': 'Nome completo do fornecedor'
             }),
             'cnpj': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': '00.000.000/0000-00',
                 'maxlength': '18'
             }),
             'telefone': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': '(00) 00000-0000 ou (00) 0000-0000',
                 'maxlength': '15'
             }),
             'email': forms.EmailInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': 'email@exemplo.com'
             }),
             'endereco': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'rows': 3,
                 'placeholder': 'Endereço completo do fornecedor'
             }),
@@ -161,11 +182,26 @@ class EntradaManualForm(forms.ModelForm):
         model = StockMovement
         fields = ['produto', 'quantidade', 'custo_unitario', 'fornecedor', 'observacao']
         widgets = {
-            'produto': forms.Select(attrs={'class': 'form-select'}),
-            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
-            'custo_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0'}),
-            'fornecedor': forms.Select(attrs={'class': 'form-select'}),
-            'observacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'produto': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'quantidade': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'step': '0.01',
+                'min': '0.01'
+            }),
+            'custo_unitario': forms.NumberInput(attrs={
+                'class': 'w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'step': '0.01',
+                'min': '0'
+            }),
+            'fornecedor': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'observacao': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'rows': 3
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -190,9 +226,18 @@ class SaidaForm(forms.ModelForm):
         model = StockMovement
         fields = ['produto', 'quantidade', 'observacao']
         widgets = {
-            'produto': forms.Select(attrs={'class': 'form-select'}),
-            'quantidade': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'min': '0.01'}),
-            'observacao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'produto': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'quantidade': forms.NumberInput(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'step': '0.01',
+                'min': '0.01'
+            }),
+            'observacao': forms.Textarea(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'rows': 3
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -225,30 +270,71 @@ class SaidaForm(forms.ModelForm):
 
 
 class XMLUploadForm(forms.Form):
-    """Formulário para upload de XML de NF-e"""
+    """Formulário para upload de XML de NF-e ou URL"""
+    tipo_entrada = forms.ChoiceField(
+        choices=[('arquivo', 'Enviar Arquivo'), ('url', 'Inserir Link/URL')],
+        initial='arquivo',
+        widget=forms.RadioSelect(attrs={
+            'class': 'form-radio',
+            'id': 'id_tipo_entrada'
+        }),
+        label='Tipo de Entrada'
+    )
     arquivo_xml = forms.FileField(
         label='Arquivo XML da NF-e',
+        required=False,
         widget=forms.FileInput(attrs={
-            'class': 'form-control',
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer',
             'accept': '.xml',
-            'style': 'cursor: pointer;',
             'id': 'id_arquivo_xml'
+        })
+    )
+    url_xml = forms.URLField(
+        label='URL do XML',
+        required=False,
+        widget=forms.URLInput(attrs={
+            'class': 'w-full pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'https://exemplo.com/arquivo.xml',
+            'id': 'id_url_xml'
         })
     )
     fornecedor = forms.ModelChoiceField(
         queryset=Supplier.objects.all().order_by('nome'),
         required=False,
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs={
+            'class': 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        }),
         label='Fornecedor'
     )
     
-    def clean_arquivo_xml(self):
+    def clean(self):
+        """Valida que pelo menos um método de entrada foi fornecido"""
+        cleaned_data = super().clean()
+        tipo_entrada = cleaned_data.get('tipo_entrada')
+        arquivo_xml = cleaned_data.get('arquivo_xml')
+        url_xml = cleaned_data.get('url_xml')
+        
+        if tipo_entrada == 'arquivo':
+            if not arquivo_xml:
+                raise forms.ValidationError({
+                    'arquivo_xml': 'Por favor, selecione um arquivo XML.'
+                })
+            # Valida arquivo
+            self._validar_arquivo_xml(arquivo_xml)
+        elif tipo_entrada == 'url':
+            if not url_xml:
+                raise forms.ValidationError({
+                    'url_xml': 'Por favor, informe a URL do XML.'
+                })
+            # Valida URL
+            if not url_xml.lower().endswith('.xml'):
+                # Não é crítico, mas avisa
+                pass
+        
+        return cleaned_data
+    
+    def _validar_arquivo_xml(self, arquivo):
         """Valida se o arquivo é um XML válido"""
-        arquivo = self.cleaned_data.get('arquivo_xml')
-        
-        if not arquivo:
-            raise forms.ValidationError('Por favor, selecione um arquivo XML.')
-        
         # Verifica extensão
         if not arquivo.name.lower().endswith('.xml'):
             raise forms.ValidationError('O arquivo deve ter extensão .xml')
@@ -290,6 +376,4 @@ class XMLUploadForm(forms.Form):
                 
         except Exception as e:
             raise forms.ValidationError(f'O arquivo não parece ser um XML válido: {str(e)}')
-        
-        return arquivo
 

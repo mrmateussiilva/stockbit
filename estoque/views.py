@@ -17,7 +17,7 @@ from .forms import (
     ProductForm, CategoryForm, SupplierForm,
     EntradaManualForm, SaidaForm, XMLUploadForm
 )
-from .utils.xml_parser import parse_nfe_xml, encontrar_produto_por_codigo
+from .utils.xml_parser import parse_nfe_xml, encontrar_produto_por_codigo, baixar_xml_de_url
 from .utils.export_xlsx import exportar_produtos_para_xlsx, exportar_relatorio_para_xlsx
 
 
@@ -59,7 +59,18 @@ def index(request):
         # Otimização: usa select_related e prefetch_related
         total_produtos = Product.objects.count()
         total_categorias = Category.objects.count()
-        produtos_baixo_estoque = Product.objects.filter(quantidade_estoque__lte=5).count()
+        
+        # Produtos com estoque baixo (critico <= 5 ou abaixo do mínimo configurado)
+        produtos_baixo_estoque = Product.objects.filter(
+            Q(quantidade_estoque__lte=5) |
+            Q(quantidade_estoque__lte=F('estoque_minimo'), estoque_minimo__gt=0)
+        ).count()
+        
+        # Produtos com estoque abaixo do mínimo configurado
+        produtos_abaixo_minimo = Product.objects.filter(
+            quantidade_estoque__lte=F('estoque_minimo'),
+            estoque_minimo__gt=0
+        ).count()
         
         # Calcula valor total do estoque (otimizado)
         valor_total_estoque = Product.objects.aggregate(
@@ -70,6 +81,7 @@ def index(request):
             'total_produtos': total_produtos,
             'total_categorias': total_categorias,
             'produtos_baixo_estoque': produtos_baixo_estoque,
+            'produtos_abaixo_minimo': produtos_abaixo_minimo,
             'valor_total_estoque': valor_total_estoque,
         }
         cache.set(cache_key, stats, 300)  # Cache por 5 minutos
@@ -81,12 +93,13 @@ def index(request):
         'tipo', 'quantidade', 'created_at', 'produto__nome', 'produto__unidade', 'usuario__username'
     ).order_by('-created_at')[:10]
     
-    # Produtos com menor estoque (otimizado)
+    # Produtos com menor estoque (otimizado) - considera mínimo configurado ou <= 5
     produtos_criticos = Product.objects.select_related('categoria').filter(
-        quantidade_estoque__lte=5
+        Q(quantidade_estoque__lte=5) |
+        Q(quantidade_estoque__lte=F('estoque_minimo'), estoque_minimo__gt=0)
     ).only(
-        'nome', 'quantidade_estoque', 'unidade', 'categoria__nome'
-    ).order_by('quantidade_estoque')[:5]
+        'nome', 'quantidade_estoque', 'estoque_minimo', 'unidade', 'categoria__nome'
+    ).order_by('quantidade_estoque')[:10]
     
     # Dados para gráfico de movimentações (últimos 7 dias)
     from datetime import timedelta
@@ -372,7 +385,7 @@ def produto_editar(request, pk):
         if form.is_valid():
             produto = form.save()
             messages.success(request, f'Produto "{produto.nome}" atualizado com sucesso!')
-            return redirect('estoque:produto_lista')
+            return redirect('estoque:produto_detalhar', pk=produto.pk)
     else:
         form = ProductForm(instance=produto)
     
@@ -380,6 +393,157 @@ def produto_editar(request, pk):
         'form': form,
         'produto': produto,
         'titulo': f'Editar {produto.nome}'
+    })
+
+
+@login_required
+def produto_detalhar(request, pk):
+    """Visualização detalhada de produto"""
+    produto = get_object_or_404(Product.objects.select_related('categoria'), pk=pk)
+    
+    # Últimas movimentações (10 mais recentes)
+    movimentacoes_recentes = produto.movimentacoes.select_related('usuario', 'fornecedor').order_by('-created_at')[:10]
+    
+    # Estatísticas do produto
+    total_entradas = produto.movimentacoes.filter(tipo='ENTRADA').aggregate(
+        total=Sum('quantidade')
+    )['total'] or Decimal('0.00')
+    
+    total_saidas = produto.movimentacoes.filter(tipo='SAIDA').aggregate(
+        total=Sum('quantidade')
+    )['total'] or Decimal('0.00')
+    
+    # Dados para gráfico de evolução do estoque (últimos 30 dias)
+    from datetime import timedelta
+    hoje = timezone.now().date()
+    trinta_dias_atras = hoje - timedelta(days=30)
+    
+    # Agrupa movimentações por dia para o gráfico
+    movimentacoes_grafico = produto.movimentacoes.filter(
+        created_at__date__gte=trinta_dias_atras
+    ).order_by('created_at')
+    
+    # Calcula estoque ao longo do tempo
+    estoque_historico = []
+    estoque_atual = Decimal('0.00')
+    labels = []
+    dados = []
+    
+    # Calcula estoque dia a dia
+    dias_unicos = set()
+    for mov in movimentacoes_grafico:
+        dias_unicos.add(mov.created_at.date())
+    
+    dias_unicos = sorted(dias_unicos)
+    
+    for dia in dias_unicos:
+        movs_dia = movimentacoes_grafico.filter(created_at__date=dia)
+        estoque_dia = estoque_atual
+        for mov in movs_dia:
+            if mov.tipo == 'ENTRADA':
+                estoque_dia += mov.quantidade
+            else:
+                estoque_dia -= mov.quantidade
+        
+        labels.append(dia.strftime('%d/%m'))
+        dados.append(float(estoque_dia))
+        estoque_atual = estoque_dia
+    
+    context = {
+        'produto': produto,
+        'movimentacoes_recentes': movimentacoes_recentes,
+        'total_entradas': total_entradas,
+        'total_saidas': total_saidas,
+        'grafico_labels': mark_safe(json.dumps(labels)),
+        'grafico_dados': mark_safe(json.dumps(dados)),
+    }
+    
+    return render(request, 'estoque/produtos/detalhar.html', context)
+
+
+@login_required
+def produto_historico(request, pk):
+    """Histórico completo de movimentações do produto"""
+    produto = get_object_or_404(Product, pk=pk)
+    
+    # Filtros
+    data_inicio_str = request.GET.get('data_inicio')
+    data_fim_str = request.GET.get('data_fim')
+    tipo_filter = request.GET.get('tipo')
+    
+    movimentacoes = produto.movimentacoes.select_related('usuario', 'fornecedor').all()
+    
+    # Aplica filtros
+    if data_inicio_str:
+        try:
+            data_inicio = datetime.strptime(data_inicio_str, '%Y-%m-%d').replace(tzinfo=timezone.utc)
+            movimentacoes = movimentacoes.filter(created_at__gte=data_inicio)
+        except:
+            pass
+    
+    if data_fim_str:
+        try:
+            data_fim = datetime.strptime(data_fim_str, '%Y-%m-%d').replace(
+                hour=23, minute=59, second=59, tzinfo=timezone.utc
+            )
+            movimentacoes = movimentacoes.filter(created_at__lte=data_fim)
+        except:
+            pass
+    
+    if tipo_filter and tipo_filter in ['ENTRADA', 'SAIDA']:
+        movimentacoes = movimentacoes.filter(tipo=tipo_filter)
+    
+    # Ordena por data mais recente
+    movimentacoes = movimentacoes.order_by('-created_at')
+    
+    # Adiciona valor total calculado para cada movimentação
+    movimentacoes_com_total = []
+    for mov in movimentacoes:
+        valor_total = mov.quantidade * mov.custo_unitario
+        mov.valor_total = valor_total
+        movimentacoes_com_total.append(mov)
+    
+    # Paginação
+    from django.core.paginator import Paginator
+    paginator = Paginator(movimentacoes_com_total, 20)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'produto': produto,
+        'movimentacoes': page_obj,
+        'data_inicio': data_inicio_str,
+        'data_fim': data_fim_str,
+        'tipo_filter': tipo_filter,
+    }
+    
+    return render(request, 'estoque/produtos/historico.html', context)
+
+
+@login_required
+def produto_deletar(request, pk):
+    """Deletar produto"""
+    produto = get_object_or_404(Product, pk=pk)
+    
+    # Verifica se há movimentações
+    movimentacoes_count = produto.movimentacoes.count()
+    
+    if movimentacoes_count > 0:
+        messages.error(
+            request,
+            f'Não é possível deletar o produto "{produto.nome}" pois existem {movimentacoes_count} movimentação(ões) vinculada(s) a ele. '
+            f'Considere desativar o produto ao invés de deletá-lo.'
+        )
+        return redirect('estoque:produto_detalhar', pk=produto.pk)
+    
+    if request.method == 'POST':
+        nome_produto = produto.nome
+        produto.delete()
+        messages.success(request, f'Produto "{nome_produto}" deletado com sucesso!')
+        return redirect('estoque:produto_lista')
+    
+    return render(request, 'estoque/produtos/confirmar_delete.html', {
+        'produto': produto
     })
 
 
@@ -411,10 +575,19 @@ def entrada_xml(request):
     if request.method == 'POST':
         form = XMLUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            arquivo_xml = request.FILES['arquivo_xml']
+            tipo_entrada = form.cleaned_data.get('tipo_entrada')
             fornecedor = form.cleaned_data.get('fornecedor')
+            arquivo_xml = None
             
             try:
+                # Processa de acordo com o tipo de entrada
+                if tipo_entrada == 'arquivo':
+                    arquivo_xml = request.FILES['arquivo_xml']
+                elif tipo_entrada == 'url':
+                    url_xml = form.cleaned_data.get('url_xml')
+                    # Baixa o XML da URL
+                    arquivo_xml = baixar_xml_de_url(url_xml)
+                
                 # Faz o parsing do XML
                 produtos_xml = parse_nfe_xml(arquivo_xml)
                 
@@ -754,9 +927,9 @@ def api_verificar_sku(request):
 @login_required
 def pedido_whatsapp(request):
     """Geração de pedidos para WhatsApp"""
-    produtos = Product.objects.select_related('categoria').filter(
-        quantidade_estoque__gt=0
-    ).order_by('categoria__nome', 'nome')
+    # Mostra todos os produtos, não apenas os com estoque > 0
+    # pois o objetivo é fazer pedidos para reposição de estoque
+    produtos = Product.objects.select_related('categoria').all().order_by('categoria__nome', 'nome')
     
     if request.method == 'POST':
         # Coleta os produtos selecionados com quantidades
@@ -769,14 +942,15 @@ def pedido_whatsapp(request):
             
             if quantidade and float(quantidade) > 0:
                 qtd = Decimal(quantidade)
-                if qtd <= produto.quantidade_estoque:
-                    valor_item = qtd * produto.custo_unitario
-                    produtos_selecionados.append({
-                        'produto': produto,
-                        'quantidade': qtd,
-                        'valor_total': valor_item
-                    })
-                    total += valor_item
+                # Permite pedir qualquer quantidade, mesmo maior que o estoque
+                # pois o objetivo é fazer pedidos para reposição de estoque
+                valor_item = qtd * produto.custo_unitario
+                produtos_selecionados.append({
+                    'produto': produto,
+                    'quantidade': qtd,
+                    'valor_total': valor_item
+                })
+                total += valor_item
         
         if produtos_selecionados:
             # Formata mensagem para WhatsApp

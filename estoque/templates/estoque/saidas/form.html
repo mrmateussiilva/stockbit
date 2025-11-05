@@ -3,130 +3,233 @@
 {% block page_title %}Saída de Produtos{% endblock %}
 
 {% block content %}
-<div class="breadcrumb-container">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
-            <li class="breadcrumb-item active">Saída de Produtos</li>
-        </ol>
-    </nav>
-</div>
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">Saída de Produtos</li>
+    </ol>
+</nav>
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-box-arrow-up"></i> Registrar Saída de Produtos</h5>
+<div x-data="saidaForm()" class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Registrar Saída de Produtos</h3>
+        </div>
+        <div class="p-6">
+            <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-yellow-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                    <p class="text-sm text-yellow-700">Apenas produtos com estoque disponível serão exibidos na lista.</p>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    Apenas produtos com estoque disponível serão exibidos na lista.
+            
+            <form method="post" id="saidaForm" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.produto.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.produto.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.produto }}
+                    <div x-show="estoque.info" class="mt-2" x-transition>
+                        <span x-html="estoque.message" class="text-sm"></span>
+                    </div>
+                    {% if form.produto.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.produto.errors }}</p>
+                    {% endif %}
                 </div>
                 
-                <form method="post" id="saidaForm">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.produto.id_for_label }}" class="form-label">{{ form.produto.label }}</label>
-                        {{ form.produto }}
-                        <small class="form-text text-muted" id="estoque-display"></small>
-                        {% if form.produto.errors %}
-                            <div class="text-danger small">{{ form.produto.errors }}</div>
-                        {% endif %}
+                <div>
+                    <label for="{{ form.quantidade.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.quantidade.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.quantidade }}
+                    <div x-show="quantidade.error" class="mt-1" x-transition>
+                        <p class="text-sm text-red-600" x-text="quantidade.errorMessage"></p>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.quantidade.id_for_label }}" class="form-label">{{ form.quantidade.label }}</label>
-                        {{ form.quantidade }}
-                        {% if form.quantidade.errors %}
-                            <div class="text-danger small">{{ form.quantidade.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.observacao.id_for_label }}" class="form-label">{{ form.observacao.label }}</label>
-                        {{ form.observacao }}
-                        {% if form.observacao.errors %}
-                            <div class="text-danger small">{{ form.observacao.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <button type="submit" class="btn btn-danger">
-                        <i class="bi bi-check-circle"></i> Registrar Saída
+                    {% if form.quantidade.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.quantidade.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.observacao.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.observacao.label }}
+                    </label>
+                    {{ form.observacao }}
+                    {% if form.observacao.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.observacao.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
+                    <button type="submit" 
+                            :disabled="!canSubmit"
+                            :class="canSubmit ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-400 cursor-not-allowed'"
+                            class="inline-flex items-center px-6 py-2.5 text-white rounded-lg transition-colors font-medium">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Registrar Saída
                     </button>
-                    <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> Cancelar
+                    <a href="{% url 'estoque:index' %}" class="inline-flex items-center px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancelar
                     </a>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const produtoSelect = document.getElementById('{{ form.produto.id_for_label }}');
-    const quantidadeInput = document.getElementById('{{ form.quantidade.id_for_label }}');
-    const estoqueDisplay = document.getElementById('estoque-display');
-    let estoqueAtual = 0;
-    let unidadeAtual = '';
-    
-    function atualizarEstoque() {
-        const produtoId = produtoSelect.value;
-        if (produtoId) {
-            fetch(`{% url 'estoque:api_produto_estoque' 0 %}`.replace('0', produtoId))
-                .then(response => response.json())
-                .then(data => {
-                    estoqueAtual = data.quantidade;
-                    unidadeAtual = data.unidade;
-                    estoqueDisplay.innerHTML = `<span class="badge bg-info">Estoque disponível: <strong>${data.quantidade}</strong> ${data.unidade}</span>`;
-                    validarQuantidade();
-                })
-                .catch(error => {
-                    console.error('Erro ao buscar estoque:', error);
+function saidaForm() {
+    return {
+        estoque: {
+            info: false,
+            message: '',
+            disponivel: 0,
+            unidade: ''
+        },
+        quantidade: {
+            error: false,
+            errorMessage: '',
+            value: 0
+        },
+        produtoId: null,
+        
+        get canSubmit() {
+            return this.produtoId && 
+                   this.quantidade.value > 0 && 
+                   !this.quantidade.error &&
+                   this.quantidade.value <= this.estoque.disponivel;
+        },
+        
+        init() {
+            const produtoSelect = document.getElementById('{{ form.produto.id_for_label }}');
+            const quantidadeInput = document.getElementById('{{ form.quantidade.id_for_label }}');
+            
+            if (produtoSelect) {
+                produtoSelect.addEventListener('change', () => {
+                    this.produtoId = produtoSelect.value;
+                    if (this.produtoId) {
+                        this.buscarEstoque();
+                    } else {
+                        this.estoque.info = false;
+                    }
                 });
-        } else {
-            estoqueDisplay.textContent = '';
-            estoqueAtual = 0;
+            }
+            
+            if (quantidadeInput) {
+                quantidadeInput.addEventListener('input', () => {
+                    this.quantidade.value = parseFloat(quantidadeInput.value) || 0;
+                    this.validarQuantidade();
+                });
+            }
+        },
+        
+        async buscarEstoque() {
+            if (!this.produtoId) return;
+            
+            try {
+                const url = `{% url 'estoque:api_produto_estoque' 0 %}`.replace('0', this.produtoId);
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                this.estoque.disponivel = data.quantidade;
+                this.estoque.unidade = data.unidade;
+                this.estoque.info = true;
+                this.estoque.message = `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Estoque disponível: <strong>${data.quantidade}</strong> ${data.unidade}</span>`;
+                
+                this.validarQuantidade();
+            } catch (error) {
+                console.error('Erro ao buscar estoque:', error);
+                this.estoque.info = false;
+            }
+        },
+        
+        validarQuantidade() {
+            if (!this.quantidade.value || this.quantidade.value <= 0) {
+                this.quantidade.error = false;
+                return;
+            }
+            
+            if (this.quantidade.value > this.estoque.disponivel) {
+                this.quantidade.error = true;
+                this.quantidade.errorMessage = `Estoque insuficiente! Disponível: ${this.estoque.disponivel} ${this.estoque.unidade}`;
+                
+                const quantidadeInput = document.getElementById('{{ form.quantidade.id_for_label }}');
+                if (quantidadeInput) {
+                    quantidadeInput.classList.remove('border-gray-300', 'border-green-300');
+                    quantidadeInput.classList.add('border-red-300');
+                }
+            } else {
+                this.quantidade.error = false;
+                
+                const quantidadeInput = document.getElementById('{{ form.quantidade.id_for_label }}');
+                if (quantidadeInput) {
+                    quantidadeInput.classList.remove('border-gray-300', 'border-red-300');
+                    quantidadeInput.classList.add('border-green-300');
+                }
+            }
         }
     }
-    
-    function validarQuantidade() {
-        const quantidade = parseFloat(quantidadeInput.value) || 0;
-        
-        if (quantidade <= 0) {
-            quantidadeInput.classList.remove('is-invalid', 'is-valid');
-            estoqueDisplay.classList.remove('text-danger');
-            return;
-        }
-        
-        if (quantidade > estoqueAtual) {
-            quantidadeInput.classList.add('is-invalid');
-            quantidadeInput.classList.remove('is-valid');
-            estoqueDisplay.innerHTML = `<span class="badge bg-danger">Estoque insuficiente! Disponível: <strong>${estoqueAtual}</strong> ${unidadeAtual}</span>`;
-            quantidadeInput.setCustomValidity(
-                `Quantidade solicitada (${quantidade}) excede o estoque disponível (${estoqueAtual} ${unidadeAtual})`
-            );
-        } else {
-            quantidadeInput.classList.remove('is-invalid');
-            quantidadeInput.classList.add('is-valid');
-            estoqueDisplay.innerHTML = `<span class="badge bg-success">Estoque disponível: <strong>${estoqueAtual}</strong> ${unidadeAtual}</span>`;
-            quantidadeInput.setCustomValidity('');
-        }
-        
-        quantidadeInput.reportValidity();
-    }
-    
-    produtoSelect.addEventListener('change', atualizarEstoque);
-    
-    if (quantidadeInput) {
-        quantidadeInput.addEventListener('input', validarQuantidade);
-        quantidadeInput.addEventListener('blur', validarQuantidade);
-    }
-    
-    atualizarEstoque(); // Atualiza ao carregar a página
-});
+}
 </script>
-{% endblock %}
 
+<style>
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input[type="number"].border-red-300 {
+    border-color: #fca5a5;
+}
+
+input[type="number"].border-green-300 {
+    border-color: #86efac;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+</style>
+{% endblock %}

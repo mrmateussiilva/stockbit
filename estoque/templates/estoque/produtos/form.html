@@ -3,132 +3,188 @@
 {% block page_title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<div class="breadcrumb-container">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'estoque:produto_lista' %}">Produtos</a></li>
-            <li class="breadcrumb-item active">{{ titulo }}</li>
-        </ol>
-    </nav>
-</div>
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li><a href="{% url 'estoque:produto_lista' %}" class="hover:text-gray-700">Produtos</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">{{ titulo }}</li>
+    </ol>
+</nav>
 
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-box"></i> {{ titulo }}</h5>
+<div x-data="produtoForm()" class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">{{ titulo }}</h3>
     </div>
-    <div class="card-body">
-        <form method="post">
+    <div class="p-6">
+        <form method="post" class="space-y-6">
             {% csrf_token %}
             
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label for="{{ form.codigo.id_for_label }}" class="form-label">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Código -->
+                <div>
+                    <label for="{{ form.codigo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
                         {{ form.codigo.label }}
-                        <small class="text-muted">(opcional)</small>
+                        <span class="text-gray-500 font-normal">(opcional)</span>
                     </label>
-                    <div class="input-group">
+                    <div class="relative">
                         {{ form.codigo }}
-                        <span class="input-group-text">
-                            <i class="bi bi-info-circle" data-bs-toggle="tooltip" title="Se deixado em branco, será gerado automaticamente"></i>
-                        </span>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
                     </div>
                     {% if form.codigo.help_text %}
-                        <small class="form-text text-muted">{{ form.codigo.help_text }}</small>
+                        <p class="mt-1 text-xs text-gray-500">{{ form.codigo.help_text }}</p>
                     {% endif %}
                     {% if form.codigo.errors %}
-                        <div class="text-danger small">{{ form.codigo.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.codigo.errors }}</p>
                     {% endif %}
-                    <div id="sku-preview" class="text-muted small mt-1" style="display: none;">
-                        <i class="bi bi-lightbulb"></i> <span id="sku-preview-text"></span>
+                    <div x-show="skuPreview.show" class="mt-2 text-sm" x-transition>
+                        <span x-html="skuPreview.message"></span>
                     </div>
                 </div>
                 
-                <div class="col-md-6">
-                    <label for="{{ form.nome.id_for_label }}" class="form-label">{{ form.nome.label }}</label>
+                <!-- Nome -->
+                <div>
+                    <label for="{{ form.nome.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.nome.label }} <span class="text-red-500">*</span>
+                    </label>
                     {{ form.nome }}
                     {% if form.nome.errors %}
-                        <div class="text-danger small">{{ form.nome.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.nome.errors }}</p>
                     {% endif %}
                 </div>
                 
-                <div class="col-md-4">
-                    <label for="{{ form.categoria.id_for_label }}" class="form-label">{{ form.categoria.label }}</label>
+                <!-- Categoria -->
+                <div>
+                    <label for="{{ form.categoria.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.categoria.label }} <span class="text-red-500">*</span>
+                    </label>
                     {{ form.categoria }}
                     {% if form.categoria.errors %}
-                        <div class="text-danger small">{{ form.categoria.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.categoria.errors }}</p>
                     {% endif %}
                 </div>
                 
-                <div class="col-md-4">
-                    <label for="{{ form.unidade.id_for_label }}" class="form-label">{{ form.unidade.label }}</label>
+                <!-- Unidade -->
+                <div>
+                    <label for="{{ form.unidade.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.unidade.label }} <span class="text-red-500">*</span>
+                    </label>
                     {{ form.unidade }}
                     {% if form.unidade.errors %}
-                        <div class="text-danger small">{{ form.unidade.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.unidade.errors }}</p>
                     {% endif %}
                 </div>
                 
-                <div class="col-md-4">
-                    <label for="{{ form.quantidade_estoque.id_for_label }}" class="form-label">{{ form.quantidade_estoque.label }}</label>
+                <!-- Quantidade Estoque -->
+                <div>
+                    <label for="{{ form.quantidade_estoque.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.quantidade_estoque.label }} <span class="text-red-500">*</span>
+                    </label>
                     {{ form.quantidade_estoque }}
                     {% if form.quantidade_estoque.errors %}
-                        <div class="text-danger small">{{ form.quantidade_estoque.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.quantidade_estoque.errors }}</p>
                     {% endif %}
                 </div>
                 
-                <div class="col-md-4">
-                    <label for="{{ form.custo_unitario.id_for_label }}" class="form-label">{{ form.custo_unitario.label }}</label>
-                    {{ form.custo_unitario }}
-                    {% if form.custo_unitario.errors %}
-                        <div class="text-danger small">{{ form.custo_unitario.errors }}</div>
-                    {% endif %}
-                </div>
-                
-                <div class="col-md-4">
-                    <label for="{{ form.ncm.id_for_label }}" class="form-label">
-                        {{ form.ncm.label }}
-                        <small class="text-muted">(opcional)</small>
+                <!-- Estoque Mínimo -->
+                <div>
+                    <label for="{{ form.estoque_minimo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.estoque_minimo.label }}
+                        <span class="text-gray-500 font-normal">(opcional)</span>
                     </label>
-                    <div class="input-group">
+                    <div class="relative">
+                        {{ form.estoque_minimo }}
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    {% if form.estoque_minimo.help_text %}
+                        <p class="mt-1 text-xs text-gray-500">{{ form.estoque_minimo.help_text }}</p>
+                    {% endif %}
+                    {% if form.estoque_minimo.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.estoque_minimo.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Custo Unitário -->
+                <div>
+                    <label for="{{ form.custo_unitario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.custo_unitario.label }} <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                        {{ form.custo_unitario }}
+                    </div>
+                    {% if form.custo_unitario.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.custo_unitario.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- NCM -->
+                <div>
+                    <label for="{{ form.ncm.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.ncm.label }}
+                        <span class="text-gray-500 font-normal">(opcional)</span>
+                    </label>
+                    <div class="relative">
                         {{ form.ncm }}
-                        <span class="input-group-text">
-                            <i class="bi bi-upc-scan" data-bs-toggle="tooltip" title="NCM deve ter 8 dígitos"></i>
-                        </span>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                            </svg>
+                        </div>
                     </div>
                     {% if form.ncm.help_text %}
-                        <small class="form-text text-muted">{{ form.ncm.help_text }}</small>
+                        <p class="mt-1 text-xs text-gray-500">NCM deve ter 8 dígitos</p>
                     {% endif %}
                     {% if form.ncm.errors %}
-                        <div class="text-danger small">{{ form.ncm.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.ncm.errors }}</p>
                     {% endif %}
                 </div>
                 
-                <div class="col-md-4">
-                    <label for="{{ form.ean.id_for_label }}" class="form-label">
+                <!-- EAN -->
+                <div>
+                    <label for="{{ form.ean.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
                         {{ form.ean.label }}
-                        <small class="text-muted">(opcional)</small>
+                        <span class="text-gray-500 font-normal">(opcional)</span>
                     </label>
-                    <div class="input-group">
+                    <div class="relative">
                         {{ form.ean }}
-                        <span class="input-group-text">
-                            <i class="bi bi-upc" data-bs-toggle="tooltip" title="EAN deve ter 12 ou 13 dígitos"></i>
-                        </span>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
+                            </svg>
+                        </div>
                     </div>
                     {% if form.ean.help_text %}
-                        <small class="form-text text-muted">{{ form.ean.help_text }}</small>
+                        <p class="mt-1 text-xs text-gray-500">EAN deve ter 12 ou 13 dígitos</p>
                     {% endif %}
                     {% if form.ean.errors %}
-                        <div class="text-danger small">{{ form.ean.errors }}</div>
+                        <p class="mt-1 text-sm text-red-600">{{ form.ean.errors }}</p>
                     {% endif %}
                 </div>
             </div>
             
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle"></i> Salvar
+            <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
+                <button type="submit" class="inline-flex items-center px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Salvar
                 </button>
-                <a href="{% url 'estoque:produto_lista' %}" class="btn btn-secondary">
-                    <i class="bi bi-x-circle"></i> Cancelar
+                <a href="{% url 'estoque:produto_lista' %}" class="inline-flex items-center px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    Cancelar
                 </a>
             </div>
         </form>
@@ -136,110 +192,131 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const codigoInput = document.getElementById('{{ form.codigo.id_for_label }}');
-    const previewDiv = document.getElementById('sku-preview');
-    const previewText = document.getElementById('sku-preview-text');
-    let skuTimeout = null;
-    const produtoId = {% if produto %}{{ produto.pk }}{% else %}null{% endif %};
-    
-    // Validação de SKU em tempo real
-    if (codigoInput) {
-        codigoInput.addEventListener('input', function() {
-            const sku = this.value.trim();
-            
-            // Preview de geração automática
-            if (!sku) {
-                previewDiv.style.display = 'block';
-                previewText.innerHTML = '<span class="text-info"><i class="bi bi-info-circle"></i> Será gerado automaticamente (ex: PROD-0001)</span>';
-                codigoInput.classList.remove('is-invalid', 'is-valid');
-                return;
-            }
-            
-            // Debounce: aguarda 500ms após parar de digitar
-            clearTimeout(skuTimeout);
-            
-            previewDiv.style.display = 'block';
-            previewText.innerHTML = '<span class="text-muted"><i class="bi bi-hourglass-split"></i> Verificando...</span>';
-            codigoInput.classList.remove('is-invalid', 'is-valid');
-            
-            skuTimeout = setTimeout(function() {
-                fetch(`{% url 'estoque:api_verificar_sku' %}?sku=${encodeURIComponent(sku)}${produtoId ? '&produto_id=' + produtoId : ''}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.disponivel) {
-                            previewText.innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> ' + data.mensagem + '</span>';
-                            codigoInput.classList.remove('is-invalid');
-                            codigoInput.classList.add('is-valid');
-                        } else {
-                            previewText.innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> ' + data.mensagem + '</span>';
-                            codigoInput.classList.remove('is-valid');
-                            codigoInput.classList.add('is-invalid');
-                        }
-                    })
-                    .catch(error => {
-                        previewText.innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Erro ao verificar SKU</span>';
-                        console.error('Erro:', error);
-                    });
-            }, 500);
-        });
+function produtoForm() {
+    return {
+        skuPreview: {
+            show: false,
+            message: '',
+            loading: false
+        },
+        produtoId: {% if produto %}{{ produto.pk }}{% else %}null{% endif %},
+        skuTimeout: null,
         
-        // Mostra preview inicial se campo estiver vazio
-        if (!codigoInput.value.trim()) {
-            previewDiv.style.display = 'block';
-            previewText.innerHTML = '<span class="text-info"><i class="bi bi-info-circle"></i> Será gerado automaticamente (ex: PROD-0001)</span>';
-        } else if (codigoInput.value.trim()) {
-            // Valida SKU existente ao carregar a página
-            codigoInput.dispatchEvent(new Event('input'));
-        }
-    }
-    
-    // Validação de estoque negativo na saída
-    const quantidadeInput = document.getElementById('{{ form.quantidade.id_for_label }}');
-    const produtoSelect = document.getElementById('{{ form.produto.id_for_label }}');
-    
-    if (quantidadeInput && produtoSelect) {
-        function validarEstoque() {
-            const produtoId = produtoSelect.value;
-            const quantidade = parseFloat(quantidadeInput.value) || 0;
+        init() {
+            const codigoInput = document.getElementById('{{ form.codigo.id_for_label }}');
+            if (codigoInput) {
+                // Verifica se há valor inicial
+                if (!codigoInput.value.trim()) {
+                    this.showAutoGenerateMessage();
+                } else if (codigoInput.value.trim()) {
+                    this.checkSku(codigoInput.value.trim());
+                }
+                
+                // Listener reativo
+                codigoInput.addEventListener('input', () => {
+                    const sku = codigoInput.value.trim();
+                    if (!sku) {
+                        this.showAutoGenerateMessage();
+                        this.updateBorder(codigoInput, 'default');
+                        return;
+                    }
+                    
+                    // Debounce
+                    clearTimeout(this.skuTimeout);
+                    this.skuPreview.loading = true;
+                    this.skuPreview.show = true;
+                    
+                    this.skuTimeout = setTimeout(() => {
+                        this.checkSku(sku);
+                    }, 500);
+                });
+            }
+        },
+        
+        showAutoGenerateMessage() {
+            this.skuPreview.show = true;
+            this.skuPreview.message = '<span class="text-blue-600 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Será gerado automaticamente (ex: PROD-0001)</span>';
+        },
+        
+        async checkSku(sku) {
+            const codigoInput = document.getElementById('{{ form.codigo.id_for_label }}');
+            if (!codigoInput) return;
             
-            if (produtoId && quantidade > 0) {
-                fetch(`{% url 'estoque:api_produto_estoque' 0 %}`.replace('0', produtoId))
-                    .then(response => response.json())
-                    .then(data => {
-                        if (quantidade > data.quantidade) {
-                            quantidadeInput.classList.add('is-invalid');
-                            quantidadeInput.setCustomValidity(
-                                `Estoque insuficiente! Disponível: ${data.quantidade} ${data.unidade}`
-                            );
-                        } else {
-                            quantidadeInput.classList.remove('is-invalid');
-                            quantidadeInput.setCustomValidity('');
-                        }
-                        quantidadeInput.reportValidity();
-                    })
-                    .catch(error => {
-                        console.error('Erro ao verificar estoque:', error);
-                    });
+            try {
+                const url = `{% url 'estoque:api_verificar_sku' %}?sku=${encodeURIComponent(sku)}${this.produtoId ? '&produto_id=' + this.produtoId : ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                this.skuPreview.loading = false;
+                
+                if (data.disponivel) {
+                    this.skuPreview.message = `<span class="text-green-600 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ${data.mensagem}</span>`;
+                    this.updateBorder(codigoInput, 'success');
+                } else {
+                    this.skuPreview.message = `<span class="text-red-600 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg> ${data.mensagem}</span>`;
+                    this.updateBorder(codigoInput, 'error');
+                }
+            } catch (error) {
+                this.skuPreview.loading = false;
+                this.skuPreview.message = '<span class="text-yellow-600 flex items-center"><svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Erro ao verificar SKU</span>';
+                console.error('Erro:', error);
+            }
+        },
+        
+        updateBorder(input, status) {
+            input.classList.remove('border-red-300', 'border-green-300', 'border-gray-300');
+            if (status === 'success') {
+                input.classList.add('border-green-300');
+            } else if (status === 'error') {
+                input.classList.add('border-red-300');
+            } else {
+                input.classList.add('border-gray-300');
             }
         }
-        
-        if (produtoSelect) {
-            produtoSelect.addEventListener('change', validarEstoque);
-        }
-        
-        if (quantidadeInput) {
-            quantidadeInput.addEventListener('input', validarEstoque);
-            quantidadeInput.addEventListener('blur', validarEstoque);
-        }
     }
-    
-    // Inicializa tooltips do Bootstrap
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
+}
 </script>
-{% endblock %}
 
+<style>
+input[type="text"],
+input[type="number"],
+input[type="email"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+input[type="number"] {
+    padding-left: 2.5rem;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+</style>
+{% endblock %}

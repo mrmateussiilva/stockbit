@@ -3,174 +3,226 @@
 {% block page_title %}Entrada via XML{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-file-earmark-code"></i> Entrada via XML de NF-e</h5>
-                <a href="{% url 'estoque:entrada_manual' %}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-pencil"></i> Entrada Manual
-                </a>
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h2 class="text-xl font-bold text-white">Entrada via XML de NF-e</h2>
             </div>
-            <div class="card-body">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
+            <a href="{% url 'estoque:entrada_manual' %}" class="px-4 py-2 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium">
+                Entrada Manual
+            </a>
+        </div>
+        
+        <div class="p-6">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 p-4 rounded-lg border-l-4 {% if message.tags == 'success' %}bg-green-50 border-green-500 text-green-800{% elif message.tags == 'error' or message.tags == 'danger' %}bg-red-50 border-red-500 text-red-800{% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-500 text-yellow-800{% else %}bg-blue-50 border-blue-500 text-blue-800{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-start gap-3">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-sm text-blue-800">
+                        <p class="font-medium mb-1">Envie o arquivo XML ou informe a URL da Nota Fiscal Eletrônica.</p>
+                        <p>O sistema irá extrair automaticamente os produtos e permitir vinculá-los ao cadastro existente ou criar novos produtos.</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if form.non_field_errors %}
+                <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
                     {% endfor %}
-                {% endif %}
+                </div>
+            {% endif %}
+            
+            <form method="post" enctype="multipart/form-data" x-data="{ tipoEntrada: '{{ form.tipo_entrada.value|default:"arquivo" }}' }">
+                {% csrf_token %}
                 
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> 
-                    Envie o arquivo XML da Nota Fiscal Eletrônica. O sistema irá extrair automaticamente 
-                    os produtos e permitir vinculá-los ao cadastro existente ou criar novos produtos.
+                <!-- Tipo de Entrada -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Tipo de Entrada</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="tipo_entrada" value="arquivo" x-model="tipoEntrada" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Enviar Arquivo</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input type="radio" name="tipo_entrada" value="url" x-model="tipoEntrada" class="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Inserir Link/URL</span>
+                        </label>
+                    </div>
                 </div>
                 
-                {% if form.non_field_errors %}
-                    <div class="alert alert-danger">
-                        {% for error in form.non_field_errors %}
-                            <div>{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-                
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.arquivo_xml.id_for_label }}" class="form-label">{{ form.arquivo_xml.label }}</label>
-                        <div class="file-input-wrapper position-relative">
-                            {{ form.arquivo_xml }}
-                            <div id="file-name-display" class="text-muted small mt-2" style="display: none;">
-                                <i class="bi bi-file-earmark-code"></i> <span id="file-name-text"></span>
-                            </div>
+                <!-- Campo Arquivo -->
+                <div class="mb-4" x-show="tipoEntrada === 'arquivo'" x-transition>
+                    <label for="{{ form.arquivo_xml.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.arquivo_xml.label }}
+                    </label>
+                    <div class="relative">
+                        {{ form.arquivo_xml }}
+                        <div id="file-name-display" class="mt-2 text-sm text-gray-600 hidden">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span id="file-name-text"></span>
                         </div>
-                        {% if form.arquivo_xml.errors %}
-                            <div class="text-danger small mt-1">{{ form.arquivo_xml.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">Selecione o arquivo XML da NF-e (.xml)</small>
                     </div>
-                    
-                    <style>
-                        .file-input-wrapper input[type="file"] {
-                            display: block !important;
-                            width: 100% !important;
-                            padding: 0.5rem !important;
-                            font-size: 1rem !important;
-                            line-height: 1.5 !important;
-                            color: #212529 !important;
-                            background-color: #fff !important;
-                            border: 1px solid #ced4da !important;
-                            border-radius: 0.375rem !important;
-                            cursor: pointer !important;
-                            position: relative !important;
-                            z-index: 10 !important;
-                            pointer-events: auto !important;
-                            opacity: 1 !important;
-                            visibility: visible !important;
-                        }
-                        
-                        .file-input-wrapper input[type="file"]:hover {
-                            border-color: #86b7fe !important;
-                        }
-                        
-                        .file-input-wrapper input[type="file"]:focus {
-                            border-color: #86b7fe !important;
-                            outline: 0 !important;
-                            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-                        }
-                        
-                        .file-input-wrapper input[type="file"]::file-selector-button {
-                            padding: 0.375rem 0.75rem;
-                            margin-right: 0.75rem;
-                            color: #fff;
-                            background-color: #0d6efd;
-                            border: 0;
-                            border-radius: 0.375rem;
-                            cursor: pointer;
-                            font-weight: 500;
-                        }
-                        
-                        .file-input-wrapper input[type="file"]::file-selector-button:hover {
-                            background-color: #0b5ed7;
-                        }
-                    </style>
-                    
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            const fileInput = document.getElementById('{{ form.arquivo_xml.id_for_label }}');
-                            const fileNameDisplay = document.getElementById('file-name-display');
-                            const fileNameText = document.getElementById('file-name-text');
-                            
-                            if (fileInput) {
-                                // Garante que o input esteja visível e clicável
-                                fileInput.style.display = 'block';
-                                fileInput.style.visibility = 'visible';
-                                fileInput.style.opacity = '1';
-                                fileInput.style.pointerEvents = 'auto';
-                                fileInput.style.position = 'relative';
-                                fileInput.style.zIndex = '10';
-                                
-                                // Mostra o nome do arquivo quando selecionado
-                                fileInput.addEventListener('change', function(e) {
-                                    if (this.files && this.files.length > 0) {
-                                        fileNameText.textContent = this.files[0].name;
-                                        fileNameDisplay.style.display = 'block';
-                                    } else {
-                                        fileNameDisplay.style.display = 'none';
-                                    }
-                                });
-                                
-                                // Permite clicar no label para abrir o seletor
-                                const label = document.querySelector('label[for="{{ form.arquivo_xml.id_for_label }}"]');
-                                if (label) {
-                                    label.style.cursor = 'pointer';
-                                    label.addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                        fileInput.click();
-                                    });
-                                }
-                            }
-                        });
-                    </script>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.fornecedor.id_for_label }}" class="form-label">{{ form.fornecedor.label }}</label>
-                        {{ form.fornecedor }}
-                        <small class="form-text text-muted">Opcional - Selecione o fornecedor da nota</small>
-                        {% if form.fornecedor.errors %}
-                            <div class="text-danger small">{{ form.fornecedor.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary" id="btn-processar">
-                        <i class="bi bi-upload"></i> <span id="btn-text">Processar XML</span>
-                        <span id="btn-loading" class="spinner-border spinner-border-sm ms-2 d-none" role="status" aria-hidden="true"></span>
-                    </button>
-                    <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> Cancelar
-                    </a>
-                </form>
+                    {% if form.arquivo_xml.errors %}
+                        <div class="mt-1 text-sm text-red-600">{{ form.arquivo_xml.errors }}</div>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Selecione o arquivo XML da NF-e (.xml)</p>
+                </div>
                 
-                <script>
-                    // Loading indicator durante processamento
-                    document.querySelector('form').addEventListener('submit', function(e) {
-                        const btn = document.getElementById('btn-processar');
-                        const btnText = document.getElementById('btn-text');
-                        const btnLoading = document.getElementById('btn-loading');
-                        
-                        if (btn && btnText && btnLoading) {
-                            btn.disabled = true;
-                            btnText.textContent = 'Processando...';
-                            btnLoading.classList.remove('d-none');
-                        }
-                    });
-                </script>
-            </div>
+                <!-- Campo URL -->
+                <div class="mb-4" x-show="tipoEntrada === 'url'" x-transition>
+                    <label for="{{ form.url_xml.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.url_xml.label }}
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                            </svg>
+                        </div>
+                        {{ form.url_xml }}
+                    </div>
+                    {% if form.url_xml.errors %}
+                        <div class="mt-1 text-sm text-red-600">{{ form.url_xml.errors }}</div>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Informe a URL completa do arquivo XML</p>
+                </div>
+                
+                <!-- Campo Fornecedor -->
+                <div class="mb-6">
+                    <label for="{{ form.fornecedor.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.fornecedor.label }}
+                    </label>
+                    {{ form.fornecedor }}
+                    {% if form.fornecedor.errors %}
+                        <div class="mt-1 text-sm text-red-600">{{ form.fornecedor.errors }}</div>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Opcional - Selecione o fornecedor da nota</p>
+                </div>
+                
+                <!-- Botões -->
+                <div class="flex gap-3">
+                    <button type="submit" class="flex-1 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2" id="btn-processar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <span id="btn-text">Processar XML</span>
+                        <span id="btn-loading" class="hidden">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                    <a href="{% url 'estoque:index' %}" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-{% endblock %}
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('{{ form.arquivo_xml.id_for_label }}');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        const fileNameText = document.getElementById('file-name-text');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                if (this.files && this.files.length > 0) {
+                    fileNameText.textContent = this.files[0].name;
+                    fileNameDisplay.classList.remove('hidden');
+                } else {
+                    fileNameDisplay.classList.add('hidden');
+                }
+            });
+        }
+        
+        // Loading indicator durante processamento
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const btn = document.getElementById('btn-processar');
+                const btnText = document.getElementById('btn-text');
+                const btnLoading = document.getElementById('btn-loading');
+                
+                if (btn && btnText && btnLoading) {
+                    btn.disabled = true;
+                    btnText.textContent = 'Processando...';
+                    btnLoading.classList.remove('hidden');
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+    /* Estilo para o input de arquivo */
+    #{{ form.arquivo_xml.id_for_label }} {
+        display: block !important;
+        width: 100% !important;
+        padding: 0.5rem !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+        color: #374151 !important;
+        background-color: #fff !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.5rem !important;
+        cursor: pointer !important;
+        position: relative !important;
+        z-index: 10 !important;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    #{{ form.arquivo_xml.id_for_label }}:hover {
+        border-color: #60a5fa !important;
+    }
+    
+    #{{ form.arquivo_xml.id_for_label }}:focus {
+        border-color: #3b82f6 !important;
+        outline: 0 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    }
+    
+    #{{ form.arquivo_xml.id_for_label }}::file-selector-button {
+        padding: 0.375rem 0.75rem;
+        margin-right: 0.75rem;
+        color: #fff;
+        background-color: #3b82f6;
+        border: 0;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+    
+    #{{ form.arquivo_xml.id_for_label }}::file-selector-button:hover {
+        background-color: #2563eb;
+    }
+    
+    /* Estilo para o campo URL com ícone */
+    #{{ form.url_xml.id_for_label }} {
+        padding-left: 2.5rem !important;
+    }
+</style>
+{% endblock %}

@@ -3,57 +3,92 @@
 {% block page_title %}Relatórios{% endblock %}
 
 {% block content %}
-<div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="bi bi-graph-up"></i> Relatório de Movimentações</h5>
-        <a href="?exportar=xlsx{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}" class="btn btn-success btn-sm">
-            <i class="bi bi-file-earmark-excel"></i> Exportar XLSX
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">Relatórios</li>
+    </ol>
+</nav>
+
+<!-- Filtros e Exportação -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+    <div class="px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h3 class="text-lg font-semibold text-gray-900">Relatório de Movimentações</h3>
+        <a href="?exportar=xlsx{% if data_inicio %}&data_inicio={{ data_inicio }}{% endif %}{% if data_fim %}&data_fim={{ data_fim }}{% endif %}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Exportar XLSX
         </a>
     </div>
-    <div class="card-body">
+    <div class="p-6">
         <!-- Filtros -->
-        <form method="get" class="row g-3 mb-4">
-            <div class="col-md-4">
-                <label for="data_inicio" class="form-label">Data Início</label>
-                <input type="date" name="data_inicio" id="data_inicio" class="form-control" 
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label for="data_inicio" class="block text-sm font-medium text-gray-700 mb-2">Data Início</label>
+                <input type="date" name="data_inicio" id="data_inicio" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                        value="{{ data_inicio|date:'Y-m-d' }}">
             </div>
-            <div class="col-md-4">
-                <label for="data_fim" class="form-label">Data Fim</label>
-                <input type="date" name="data_fim" id="data_fim" class="form-control" 
+            <div>
+                <label for="data_fim" class="block text-sm font-medium text-gray-700 mb-2">Data Fim</label>
+                <input type="date" name="data_fim" id="data_fim" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                        value="{{ data_fim|date:'Y-m-d' }}">
             </div>
-            <div class="col-md-4">
-                <label class="form-label">&nbsp;</label>
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-funnel"></i> Filtrar
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
+                <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    Filtrar
                 </button>
             </div>
         </form>
         
         <!-- Resumo -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card stat-card success">
-                    <div class="card-body">
-                        <h6 class="text-muted mb-1">Total de Entradas</h6>
-                        <h3 class="mb-0">{{ entradas_total }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-xl shadow-sm border-l-4 border-green-500 border border-gray-200 p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total de Entradas</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ entradas_total }}</p>
+                    </div>
+                    <div class="p-3 bg-green-50 rounded-lg">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card stat-card danger">
-                    <div class="card-body">
-                        <h6 class="text-muted mb-1">Total de Saídas</h6>
-                        <h3 class="mb-0">{{ saidas_total }}</h3>
+            
+            <div class="bg-white rounded-xl shadow-sm border-l-4 border-red-500 border border-gray-200 p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Total de Saídas</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ saidas_total }}</p>
+                    </div>
+                    <div class="p-3 bg-red-50 rounded-lg">
+                        <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card stat-card">
-                    <div class="card-body">
-                        <h6 class="text-muted mb-1">Saldo Final</h6>
-                        <h3 class="mb-0">{{ saldo_final }}</h3>
+            
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600 mb-1">Saldo Final</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ saldo_final }}</p>
+                    </div>
+                    <div class="p-3 bg-blue-50 rounded-lg">
+                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
@@ -62,56 +97,94 @@
 </div>
 
 <!-- Gráfico -->
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Gráfico de Uso por Mês</h5>
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Gráfico de Uso por Mês
+        </h3>
     </div>
-    <div class="card-body">
+    <div class="p-6">
         {% if meses %}
-            <canvas id="graficoUso"></canvas>
+            <div class="h-64">
+                <canvas id="graficoUso"></canvas>
+            </div>
         {% else %}
-            <p class="text-muted text-center">Não há dados para o período selecionado.</p>
+            <div class="text-center py-12">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                <p class="text-gray-500">Não há dados para o período selecionado.</p>
+            </div>
         {% endif %}
     </div>
 </div>
 
 <!-- Tabela de Movimentações -->
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-list"></i> Movimentações do Período</h5>
+<div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+            </svg>
+            Movimentações do Período
+        </h3>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover table-sm">
-                <thead>
+    <div class="p-6">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
                     <tr>
-                        <th>Data</th>
-                        <th>Tipo</th>
-                        <th>Produto</th>
-                        <th class="text-end">Quantidade</th>
-                        <th class="text-end">Custo Unitário</th>
-                        <th>Usuário</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Custo Unitário</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="bg-white divide-y divide-gray-200">
                     {% for mov in movimentacoes %}
-                    <tr>
-                        <td>{{ mov.created_at|date:"d/m/Y H:i" }}</td>
-                        <td>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ mov.created_at|date:"d/m/Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             {% if mov.tipo == 'ENTRADA' %}
-                                <span class="badge bg-success">{{ mov.get_tipo_display }}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ mov.get_tipo_display }}
+                                </span>
                             {% else %}
-                                <span class="badge bg-danger">{{ mov.get_tipo_display }}</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    {{ mov.get_tipo_display }}
+                                </span>
                             {% endif %}
                         </td>
-                        <td>{{ mov.produto.nome }}</td>
-                        <td class="text-end">{{ mov.quantidade }} {{ mov.produto.get_unidade_display }}</td>
-                        <td class="text-end">R$ {{ mov.custo_unitario|floatformat:2 }}</td>
-                        <td>{{ mov.usuario.username|default:"-" }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900">
+                            {{ mov.produto.nome }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                            {{ mov.quantidade }} {{ mov.produto.get_unidade_display }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            R$ {{ mov.custo_unitario|floatformat:2 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ mov.usuario.username|default:"-" }}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted">Nenhuma movimentação no período selecionado.</td>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                </svg>
+                                <p class="text-gray-500">Nenhuma movimentação no período selecionado.</p>
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -122,34 +195,48 @@
 
 <script>
 {% if meses and datasets %}
-const ctx = document.getElementById('graficoUso');
-if (ctx) {
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: {{ meses }},
-            datasets: {{ datasets }}
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Uso de Materiais por Mês'
-                },
-                legend: {
-                    position: 'right'
-                }
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('graficoUso');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ meses }},
+                datasets: {{ datasets }}
             },
-            scales: {
-                y: {
-                    beginAtZero: true
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Uso de Materiais por Mês',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    legend: {
+                        position: 'right'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
                 }
             }
-        }
-    });
-}
+        });
+    }
+});
 {% endif %}
 </script>
 {% endblock %}
-

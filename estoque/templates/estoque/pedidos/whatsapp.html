@@ -3,96 +3,126 @@
 {% block page_title %}Gerar Pedido para WhatsApp{% endblock %}
 
 {% block content %}
-<div class="breadcrumb-container">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
-            <li class="breadcrumb-item active">Pedido WhatsApp</li>
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">Pedido WhatsApp</li>
         </ol>
     </nav>
-</div>
 
 {% if produtos_selecionados %}
     <!-- Resumo do pedido -->
-    <div class="card mb-4">
-        <div class="card-header bg-success text-white">
-            <h5 class="mb-0"><i class="bi bi-check-circle"></i> Pedido Gerado</h5>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="px-6 py-4 border-b border-green-500 bg-green-50">
+            <h3 class="text-lg font-semibold text-green-900 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Pedido Gerado
+            </h3>
         </div>
-        <div class="card-body">
-            <div class="alert alert-info">
-                <strong>Total:</strong> <span class="h4">R$ {{ total|floatformat:2 }}</span>
+        <div class="p-6">
+            <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium text-blue-700">Total:</span>
+                    <span class="text-3xl font-bold text-blue-900">R$ {{ total|floatformat:2 }}</span>
+                </div>
             </div>
             
-            <div class="d-grid gap-2">
-                <a href="{{ whatsapp_url }}" target="_blank" class="btn btn-success btn-lg">
-                    <i class="bi bi-whatsapp"></i> Enviar pelo WhatsApp
+            <div class="space-y-3 mb-6">
+                <a href="{{ whatsapp_url }}" target="_blank" class="inline-flex items-center justify-center w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold text-lg">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                    </svg>
+                    Enviar pelo WhatsApp
                 </a>
-                <a href="{% url 'estoque:pedido_whatsapp' %}" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Voltar e Editar
+                <a href="{% url 'estoque:pedido_whatsapp' %}" class="inline-flex items-center justify-center w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Voltar e Editar
                 </a>
             </div>
             
-            <hr>
-            
-            <h6>Pré-visualização da mensagem:</h6>
-            <div class="bg-light p-3 rounded" style="font-family: monospace; white-space: pre-wrap; font-size: 0.9rem;">{{ mensagem }}</div>
+            <div class="border-t border-gray-200 pt-6">
+                <h4 class="text-sm font-semibold text-gray-900 mb-3">Pré-visualização da mensagem:</h4>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <pre class="text-sm text-gray-700 whitespace-pre-wrap font-mono">{{ mensagem }}</pre>
+                </div>
+            </div>
         </div>
     </div>
 {% else %}
     <!-- Formulário de seleção -->
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="bi bi-whatsapp"></i> Gerar Pedido para WhatsApp</h5>
+    <div x-data="pedidoWhatsApp()" class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                </svg>
+                Gerar Pedido para WhatsApp
+            </h3>
         </div>
-        <div class="card-body">
+        <div class="p-6">
             <form method="post">
                 {% csrf_token %}
                 
                 {% if produtos_por_categoria %}
                     {% for categoria, produtos in produtos_por_categoria.items %}
-                        <div class="mb-4">
-                            <h6 class="border-bottom pb-2 mb-3">
-                                <i class="bi bi-tag"></i> {{ categoria }}
-                            </h6>
+                        <div class="mb-8">
+                            <h4 class="text-md font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4 flex items-center">
+                                <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                                {{ categoria }}
+                            </h4>
                             
-                            <div class="table-responsive">
-                                <table class="table table-sm">
-                                    <thead>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
                                         <tr>
-                                            <th style="width: 50px;">Sel.</th>
-                                            <th>Produto</th>
-                                            <th>Código</th>
-                                            <th class="text-end">Estoque</th>
-                                            <th class="text-end">Valor Unit.</th>
-                                            <th class="text-end" style="width: 150px;">Quantidade</th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 50px;">Sel.</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Estoque</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Valor Unit.</th>
+                                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 150px;">Quantidade</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody class="bg-white divide-y divide-gray-200">
                                         {% for produto in produtos %}
-                                        <tr>
-                                            <td>
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap text-center">
                                                 <input type="checkbox" 
-                                                       class="form-check-input produto-checkbox" 
-                                                       data-produto="{{ produto.pk }}"
+                                                       x-model="produtosSelecionados[{{ produto.pk }}]"
+                                                       @change="toggleProduto({{ produto.pk }})"
+                                                       class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
                                                        id="check_{{ produto.pk }}">
                                             </td>
-                                            <td>{{ produto.nome }}</td>
-                                            <td><code>{{ produto.codigo }}</code></td>
-                                            <td class="text-end">
-                                                <span class="badge bg-info">{{ produto.quantidade_estoque }} {{ produto.get_unidade_display }}</span>
+                                            <td class="px-4 py-3 text-sm text-gray-900">{{ produto.nome }}</td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <code class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">{{ produto.codigo }}</code>
                                             </td>
-                                            <td class="text-end">R$ {{ produto.custo_unitario|floatformat:2 }}</td>
-                                            <td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-right text-sm">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if produto.quantidade_estoque <= 0 %}bg-red-100 text-red-800{% elif produto.quantidade_estoque <= 5 %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                                    {{ produto.quantidade_estoque }} {{ produto.get_unidade_display }}
+                                                </span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap text-right text-sm text-gray-900">
+                                                R$ {{ produto.custo_unitario|floatformat:2 }}
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
                                                 <input type="number" 
                                                        name="qtd_{{ produto.pk }}" 
-                                                       id="qtd_{{ produto.pk }}"
-                                                       class="form-control form-control-sm quantidade-input" 
+                                                       x-model="quantidades[{{ produto.pk }}]"
+                                                       @input="atualizarTotal()"
+                                                       :disabled="!produtosSelecionados[{{ produto.pk }}]"
+                                                       class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors"
+                                                       :class="produtosSelecionados[{{ produto.pk }}] ? 'bg-white' : 'bg-gray-100 cursor-not-allowed'"
                                                        step="0.01" 
                                                        min="0" 
-                                                       max="{{ produto.quantidade_estoque }}"
-                                                       data-max="{{ produto.quantidade_estoque }}"
-                                                       data-valor="{{ produto.custo_unitario }}"
-                                                       disabled
                                                        placeholder="0">
                                             </td>
                                         </tr>
@@ -103,34 +133,54 @@
                         </div>
                     {% endfor %}
                     
-                    <div class="card bg-light mt-4">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <strong>Total de itens selecionados:</strong> <span id="total-itens">0</span>
+                    <div class="bg-gray-50 rounded-lg p-4 mt-6 border border-gray-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <strong class="text-sm font-medium text-gray-700">Total de itens selecionados:</strong>
+                                <span class="ml-2 text-lg font-semibold text-gray-900" x-text="totalItens.toFixed(2)">0</span>
                                 </div>
-                                <div class="col-md-6 text-end">
-                                    <strong>Valor total:</strong> <span class="h5" id="valor-total">R$ 0,00</span>
-                                </div>
+                            <div class="md:text-right">
+                                <strong class="text-sm font-medium text-gray-700">Valor total:</strong>
+                                <span class="ml-2 text-2xl font-bold text-blue-600" x-text="'R$ ' + valorTotal.toFixed(2).replace('.', ',')">R$ 0,00</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-success btn-lg">
-                            <i class="bi bi-whatsapp"></i> Gerar Link do WhatsApp
+                    <div class="flex items-center gap-4 mt-6">
+                        <button type="submit" 
+                                :disabled="valorTotal <= 0"
+                                class="inline-flex items-center px-6 py-3 rounded-lg transition-colors font-semibold text-lg"
+                                :class="valorTotal > 0 ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-gray-400 cursor-not-allowed text-white'">
+                            <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                            </svg>
+                            Gerar Link do WhatsApp
                         </button>
-                        <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
-                            <i class="bi bi-x-circle"></i> Cancelar
+                        <a href="{% url 'estoque:index' %}" class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                            Cancelar
                         </a>
                     </div>
                 {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-inbox"></i>
-                        <h5>Nenhum produto com estoque</h5>
-                        <p class="text-muted mb-3">Não há produtos disponíveis para gerar pedido.</p>
-                        <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Voltar
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                        <h4 class="text-lg font-semibold text-gray-900 mb-2">Nenhum produto cadastrado</h4>
+                        <p class="text-sm text-gray-500 mb-4">Cadastre produtos primeiro para poder gerar pedidos.</p>
+                        <a href="{% url 'estoque:produto_criar' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-2">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Cadastrar Produto
+                        </a>
+                        <a href="{% url 'estoque:index' %}" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Voltar
                         </a>
                     </div>
                 {% endif %}
@@ -139,63 +189,72 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const checkboxes = document.querySelectorAll('.produto-checkbox');
-        const quantidadeInputs = document.querySelectorAll('.quantidade-input');
+    function pedidoWhatsApp() {
+        // Mapeia produtos do template para o componente
+        const produtosData = {
+            {% for categoria, produtos in produtos_por_categoria.items %}
+                {% for produto in produtos %}
+                    {{ produto.pk }}: {
+                        estoque: {{ produto.quantidade_estoque }},
+                        valor: {{ produto.custo_unitario }}
+                    },
+                {% endfor %}
+            {% endfor %}
+        };
         
-        function atualizarTotal() {
-            let totalItens = 0;
-            let valorTotal = 0;
+        return {
+            produtosSelecionados: {},
+            quantidades: {},
+            produtos: produtosData,
             
-            checkboxes.forEach(function(checkbox) {
-                if (checkbox.checked) {
-                    const produtoId = checkbox.dataset.produto;
-                    const qtdInput = document.getElementById('qtd_' + produtoId);
-                    const quantidade = parseFloat(qtdInput.value) || 0;
-                    const valor = parseFloat(qtdInput.dataset.valor) || 0;
-                    
-                    if (quantidade > 0) {
-                        totalItens += quantidade;
-                        valorTotal += quantidade * valor;
+            get totalItens() {
+                return Object.keys(this.produtosSelecionados).reduce((total, id) => {
+                    if (this.produtosSelecionados[id] && this.quantidades[id]) {
+                        return total + parseFloat(this.quantidades[id] || 0);
                     }
-                }
-            });
+                    return total;
+                }, 0);
+            },
             
-            document.getElementById('total-itens').textContent = totalItens.toFixed(2);
-            document.getElementById('valor-total').textContent = 'R$ ' + valorTotal.toFixed(2).replace('.', ',');
-        }
-        
-        checkboxes.forEach(function(checkbox) {
-            checkbox.addEventListener('change', function() {
-                const produtoId = this.dataset.produto;
-                const qtdInput = document.getElementById('qtd_' + produtoId);
-                
-                if (this.checked) {
-                    qtdInput.disabled = false;
-                    qtdInput.focus();
-                    qtdInput.value = '';
+            get valorTotal() {
+                return Object.keys(this.produtosSelecionados).reduce((total, id) => {
+                    if (this.produtosSelecionados[id] && this.quantidades[id] && this.produtos[id]) {
+                        const qtd = parseFloat(this.quantidades[id] || 0);
+                        const valor = this.produtos[id].valor;
+                        return total + (qtd * valor);
+                    }
+                    return total;
+                }, 0);
+            },
+            
+            toggleProduto(produtoId) {
+                if (this.produtosSelecionados[produtoId]) {
+                    // Produto selecionado - habilitar input
+                    this.$nextTick(() => {
+                        const input = document.getElementById(`qtd_${produtoId}`);
+                        if (input) {
+                            input.focus();
+                        }
+                    });
                 } else {
-                    qtdInput.disabled = true;
-                    qtdInput.value = '';
+                    // Produto desmarcado - limpar quantidade
+                    this.quantidades[produtoId] = '';
                 }
-                atualizarTotal();
-            });
-        });
-        
-        quantidadeInputs.forEach(function(input) {
-            input.addEventListener('input', function() {
-                const max = parseFloat(this.dataset.max) || 0;
-                const value = parseFloat(this.value) || 0;
-                
-                if (value > max) {
-                    this.value = max;
-                    alert('Quantidade não pode ser maior que o estoque disponível (' + max + ')');
-                }
-                atualizarTotal();
-            });
-        });
-    });
+            },
+            
+            atualizarTotal() {
+                // Apenas atualiza o total, sem validação de quantidade máxima
+                // Permite pedir quantidades maiores que o estoque para reposição
+            }
+        }
+    }
     </script>
+    
+    <style>
+    input[type="number"]:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
+    </style>
 {% endif %}
 {% endblock %}
-

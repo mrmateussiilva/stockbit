@@ -5,6 +5,9 @@ Extrai informações dos produtos contidos no XML
 import xml.etree.ElementTree as ET
 from typing import List, Dict, Optional
 from decimal import Decimal
+from io import BytesIO
+import urllib.request
+import urllib.error
 
 
 def parse_nfe_xml(xml_file) -> List[Dict]:
@@ -234,6 +237,55 @@ def parse_nfe_xml(xml_file) -> List[Dict]:
         raise ValueError(f"Erro ao decodificar o arquivo XML. Certifique-se de que o arquivo está em UTF-8: {str(e)}")
     except Exception as e:
         raise ValueError(f"Erro ao processar arquivo XML: {str(e)}")
+
+
+def baixar_xml_de_url(url: str) -> BytesIO:
+    """
+    Baixa um arquivo XML de uma URL e retorna um objeto BytesIO.
+    
+    Args:
+        url: URL do arquivo XML
+        
+    Returns:
+        BytesIO: Objeto de arquivo em memória com o conteúdo do XML
+        
+    Raises:
+        ValueError: Se houver erro ao baixar ou validar o XML
+    """
+    try:
+        # Faz requisição HTTP
+        req = urllib.request.Request(url)
+        req.add_header('User-Agent', 'Mozilla/5.0 (compatible; StockBit/1.0)')
+        
+        with urllib.request.urlopen(req, timeout=30) as response:
+            # Verifica se é uma resposta válida
+            if response.status != 200:
+                raise ValueError(f'Erro ao baixar XML: Status HTTP {response.status}')
+            
+            # Lê o conteúdo
+            content = response.read()
+            
+            # Verifica tamanho (máximo 10MB)
+            if len(content) > 10 * 1024 * 1024:
+                raise ValueError('O arquivo XML é muito grande. Tamanho máximo: 10MB')
+            
+            # Tenta validar se é XML válido
+            try:
+                ET.fromstring(content)
+            except ET.ParseError as e:
+                raise ValueError(f'O conteúdo baixado não é um XML válido: {str(e)}')
+            
+            # Retorna como BytesIO
+            xml_file = BytesIO(content)
+            xml_file.seek(0)
+            return xml_file
+            
+    except urllib.error.URLError as e:
+        raise ValueError(f'Erro ao acessar a URL: {str(e)}')
+    except urllib.error.HTTPError as e:
+        raise ValueError(f'Erro HTTP ao baixar XML: {e.code} - {e.reason}')
+    except Exception as e:
+        raise ValueError(f'Erro ao baixar XML da URL: {str(e)}')
 
 
 def encontrar_produto_por_codigo(codigo: str, ncm: str = '', ean: str = ''):

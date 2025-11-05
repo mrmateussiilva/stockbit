@@ -3,184 +3,218 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="breadcrumb-container">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'estoque:index' %}"><i class="bi bi-house"></i> Home</a></li>
-            <li class="breadcrumb-item active">Dashboard</li>
-        </ol>
-    </nav>
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">Dashboard</li>
+    </ol>
+</nav>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total de Produtos -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Total de Produtos</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_produtos }}</p>
+                <p class="text-xs text-gray-500 mt-1">Cadastrados</p>
+            </div>
+            <div class="p-3 bg-blue-50 rounded-lg">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Valor Total do Estoque -->
+    <div class="bg-white rounded-xl shadow-sm border-l-4 border-green-500 border border-gray-200 p-6 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Valor Total do Estoque</p>
+                <p class="text-3xl font-bold text-gray-900">R$ {{ valor_total_estoque|floatformat:2 }}</p>
+                <p class="text-xs text-gray-500 mt-1">Inventário</p>
+            </div>
+            <div class="p-3 bg-green-50 rounded-lg">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Categorias -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Categorias</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_categorias }}</p>
+                <p class="text-xs text-gray-500 mt-1">Ativas</p>
+            </div>
+            <div class="p-3 bg-purple-50 rounded-lg">
+                <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Baixo Estoque -->
+    <div class="bg-white rounded-xl shadow-sm border-l-4 border-yellow-500 border border-gray-200 p-6 card-hover">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 mb-1">Baixo Estoque</p>
+                <p class="text-3xl font-bold text-gray-900">
+                    {% if produtos_baixo_estoque > 0 %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800">{{ produtos_baixo_estoque }}</span>
+                    {% else %}
+                        {{ produtos_baixo_estoque }}
+                    {% endif %}
+                </p>
+            </div>
+            <div class="p-3 bg-yellow-50 rounded-lg">
+                <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="row g-4 mb-4">
-    <!-- Cards de Estatísticas -->
-    <div class="col-6 col-md-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-muted mb-1">Total de Produtos</h6>
-                        <h3 class="mb-0">{{ total_produtos }}</h3>
-                        <small class="text-muted">Cadastrados</small>
-                    </div>
-                    <i class="bi bi-box-seam"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-6 col-md-6 col-lg-3">
-        <div class="card stat-card success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-muted mb-1">Valor Total do Estoque</h6>
-                        <h3 class="mb-0">R$ {{ valor_total_estoque|floatformat:2 }}</h3>
-                        <small class="text-muted">Inventário</small>
-                    </div>
-                    <i class="bi bi-cash-stack"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-6 col-md-6 col-lg-3">
-        <div class="card stat-card">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-muted mb-1">Categorias</h6>
-                        <h3 class="mb-0">{{ total_categorias }}</h3>
-                        <small class="text-muted">Ativas</small>
-                    </div>
-                    <i class="bi bi-tags"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-6 col-md-6 col-lg-3">
-        <div class="card stat-card warning">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-muted mb-1">Baixo Estoque</h6>
-                        <h3 class="mb-0">
-                            {% if produtos_baixo_estoque > 0 %}
-                                <span class="badge bg-warning text-dark">{{ produtos_baixo_estoque }}</span>
-                            {% else %}
-                                {{ produtos_baixo_estoque }}
-                            {% endif %}
-                        </h3>
-                    </div>
-                    <i class="bi bi-exclamation-triangle"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-</div>
-
-<div class="row g-4">
+<!-- Charts and Tables -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <!-- Produtos com Estoque Crítico -->
-    <div class="col-12 col-lg-6">
-        <div class="card">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Produtos com Estoque Crítico</h5>
-            </div>
-            <div class="card-body">
-                {% if produtos_criticos %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Produto</th>
-                                    <th>Quantidade</th>
-                                    <th>Unidade</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for produto in produtos_criticos %}
-                                <tr>
-                                    <td>{{ produto.nome }}</td>
-                                    <td><span class="badge bg-danger">{{ produto.quantidade_estoque }}</span></td>
-                                    <td>{{ produto.get_unidade_display }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-check-circle"></i>
-                        <h5>Estoque saudável!</h5>
-                        <p class="text-muted mb-0">Todos os produtos estão com estoque adequado.</p>
-                    </div>
-                {% endif %}
-            </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                Produtos com Estoque Crítico
+            </h3>
+        </div>
+        <div class="p-6">
+            {% if produtos_criticos %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidade</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for produto in produtos_criticos %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <a href="{% url 'estoque:produto_detalhar' produto.pk %}" class="text-blue-600 hover:text-blue-900">
+                                        {{ produto.nome }}
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-right">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if produto.estoque_minimo > 0 and produto.quantidade_estoque <= produto.estoque_minimo %}bg-red-100 text-red-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ produto.quantidade_estoque }}
+                                        {% if produto.estoque_minimo > 0 %}
+                                            <span class="ml-1 text-xs">(mín: {{ produto.estoque_minimo }})</span>
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ produto.get_unidade_display }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 text-green-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Estoque saudável!</h4>
+                    <p class="text-sm text-gray-500">Todos os produtos estão com estoque adequado.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
     
     <!-- Movimentações Recentes -->
-    <div class="col-12 col-lg-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Movimentações Recentes</h5>
-            </div>
-            <div class="card-body">
-                {% if movimentacoes_recentes %}
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Data</th>
-                                    <th>Tipo</th>
-                                    <th>Produto</th>
-                                    <th>Quantidade</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for mov in movimentacoes_recentes %}
-                                <tr>
-                                    <td>{{ mov.created_at|date:"d/m H:i" }}</td>
-                                    <td>
-                                        {% if mov.tipo == 'ENTRADA' %}
-                                            <span class="badge bg-success">{{ mov.get_tipo_display }}</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">{{ mov.get_tipo_display }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ mov.produto.nome|truncatechars:25 }}</td>
-                                    <td>{{ mov.quantidade }} {{ mov.produto.unidade }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="empty-state">
-                        <i class="bi bi-inbox"></i>
-                        <h5>Nenhuma movimentação</h5>
-                        <p class="text-muted mb-0">Ainda não há movimentações registradas.</p>
-                    </div>
-                {% endif %}
-            </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Movimentações Recentes
+            </h3>
+        </div>
+        <div class="p-6">
+            {% if movimentacoes_recentes %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for mov in movimentacoes_recentes %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ mov.created_at|date:"d/m H:i" }}</td>
+                                <td class="px-4 py-3 whitespace-nowrap">
+                                    {% if mov.tipo == 'ENTRADA' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            {{ mov.get_tipo_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            {{ mov.get_tipo_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-900">
+                                    <a href="{% url 'estoque:produto_detalhar' mov.produto.pk %}" class="text-blue-600 hover:text-blue-900">
+                                        {{ mov.produto.nome|truncatechars:25 }}
+                                    </a>
+                                </td>
+                                <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500">{{ mov.quantidade }} {{ mov.produto.unidade }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">Nenhuma movimentação</h4>
+                    <p class="text-sm text-gray-500">Ainda não há movimentações registradas.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <!-- Gráfico de Movimentações -->
-<div class="row g-4 mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Movimentações dos Últimos 7 Dias</h5>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <canvas id="movimentacoesChart"></canvas>
-                </div>
-            </div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+            <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Movimentações dos Últimos 7 Dias
+        </h3>
+    </div>
+    <div class="p-6">
+        <div class="h-64">
+            <canvas id="movimentacoesChart"></canvas>
         </div>
     </div>
 </div>
@@ -197,15 +231,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 datasets: [{
                     label: 'Entradas',
                     data: {{ grafico_entradas }},
-                    backgroundColor: 'rgba(25, 135, 84, 0.8)',
-                    borderColor: 'rgba(25, 135, 84, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                    borderColor: 'rgba(34, 197, 94, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
                 }, {
                     label: 'Saídas',
                     data: {{ grafico_saidas }},
-                    backgroundColor: 'rgba(220, 53, 69, 0.8)',
-                    borderColor: 'rgba(220, 53, 69, 1)',
-                    borderWidth: 1
+                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                    borderColor: 'rgba(239, 68, 68, 1)',
+                    borderWidth: 1,
+                    borderRadius: 8
                 }]
             },
             options: {
@@ -215,13 +251,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     legend: {
                         position: 'top',
                     },
-                    title: {
-                        display: false
-                    }
                 },
                 scales: {
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
                     }
                 }
             }

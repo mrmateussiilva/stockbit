@@ -1,0 +1,270 @@
+{% extends 'base.html' %}
+
+{% block page_title %}{{ produto.nome }}{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li><a href="{% url 'estoque:produto_lista' %}" class="hover:text-gray-700">Produtos</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">{{ produto.nome }}</li>
+    </ol>
+</nav>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Informações Principais -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Card de Informações -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Informações do Produto</h3>
+                <div class="flex gap-2">
+                    <a href="{% url 'estoque:produto_editar' produto.pk %}" class="inline-flex items-center px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Editar
+                    </a>
+                    <a href="{% url 'estoque:produto_deletar' produto.pk %}" class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Deletar
+                    </a>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Código (SKU)</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ produto.codigo|default:"—" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Nome</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ produto.nome }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Categoria</label>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                            {{ produto.categoria.nome }}
+                        </span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Unidade</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ produto.get_unidade_display }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Quantidade em Estoque</label>
+                        <p class="text-2xl font-bold {% if produto.estoque_baixo or produto.estoque_critico %}text-red-600{% else %}text-gray-900{% endif %}">
+                            {{ produto.quantidade_estoque }} {{ produto.get_unidade_display }}
+                        </p>
+                        {% if produto.estoque_minimo > 0 %}
+                            <p class="text-sm text-gray-500 mt-1">Estoque mínimo: {{ produto.estoque_minimo }} {{ produto.get_unidade_display }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Custo Unitário</label>
+                        <p class="text-2xl font-bold text-gray-900">R$ {{ produto.custo_unitario|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Valor Total em Estoque</label>
+                        <p class="text-2xl font-bold text-green-600">R$ {{ produto.valor_total_estoque|floatformat:2 }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">Estoque Mínimo</label>
+                        <p class="text-lg font-semibold {% if produto.estoque_baixo %}text-red-600{% else %}text-gray-900{% endif %}">
+                            {% if produto.estoque_minimo > 0 %}
+                                {{ produto.estoque_minimo }} {{ produto.get_unidade_display }}
+                            {% else %}
+                                <span class="text-gray-400">Não configurado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if produto.ncm %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">NCM</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ produto.ncm }}</p>
+                    </div>
+                    {% endif %}
+                    {% if produto.ean %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-500 mb-1">EAN</label>
+                        <p class="text-lg font-semibold text-gray-900">{{ produto.ean }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if produto.estoque_baixo or produto.estoque_critico %}
+                <div class="mt-6 p-4 rounded-lg {% if produto.estoque_critico %}bg-red-50 border border-red-200{% else %}bg-yellow-50 border border-yellow-200{% endif %}">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 {% if produto.estoque_critico %}text-red-600{% else %}text-yellow-600{% endif %} mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div>
+                            <p class="font-medium {% if produto.estoque_critico %}text-red-800{% else %}text-yellow-800{% endif %}">
+                                {% if produto.estoque_critico %}
+                                    ⚠️ Estoque Crítico!
+                                {% else %}
+                                    ⚠️ Estoque Abaixo do Mínimo
+                                {% endif %}
+                            </p>
+                            <p class="text-sm {% if produto.estoque_critico %}text-red-700{% else %}text-yellow-700{% endif %} mt-1">
+                                {% if produto.estoque_critico %}
+                                    O estoque está muito baixo ({{ produto.quantidade_estoque }} {{ produto.get_unidade_display }}). 
+                                    {% if produto.estoque_minimo > 0 %}
+                                        Estoque mínimo configurado: {{ produto.estoque_minimo }} {{ produto.get_unidade_display }}.
+                                    {% endif %}
+                                {% else %}
+                                    O estoque está abaixo do mínimo configurado ({{ produto.estoque_minimo }} {{ produto.get_unidade_display }}).
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Gráfico de Evolução -->
+        {% if grafico_labels %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Evolução do Estoque (Últimos 30 dias)</h3>
+            </div>
+            <div class="p-6">
+                <div class="h-64">
+                    <canvas id="evolucaoEstoqueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="space-y-6">
+        <!-- Estatísticas -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Estatísticas</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Total de Entradas</label>
+                    <p class="text-2xl font-bold text-green-600">{{ total_entradas }} {{ produto.get_unidade_display }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Total de Saídas</label>
+                    <p class="text-2xl font-bold text-red-600">{{ total_saidas }} {{ produto.get_unidade_display }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Saldo</label>
+                    <p class="text-2xl font-bold text-gray-900">{{ produto.quantidade_estoque }} {{ produto.get_unidade_display }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Ações Rápidas -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Ações Rápidas</h3>
+            </div>
+            <div class="p-6 space-y-3">
+                <a href="{% url 'estoque:entrada_manual' %}?produto={{ produto.pk }}" class="block w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center font-medium">
+                    Registrar Entrada
+                </a>
+                <a href="{% url 'estoque:saida_criar' %}?produto={{ produto.pk }}" class="block w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-center font-medium">
+                    Registrar Saída
+                </a>
+                <a href="{% url 'estoque:produto_historico' produto.pk %}" class="block w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-center font-medium">
+                    Ver Histórico Completo
+                </a>
+            </div>
+        </div>
+        
+        <!-- Movimentações Recentes -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Últimas Movimentações</h3>
+            </div>
+            <div class="p-6">
+                {% if movimentacoes_recentes %}
+                    <div class="space-y-3">
+                        {% for mov in movimentacoes_recentes %}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">
+                                    {% if mov.tipo == 'ENTRADA' %}
+                                        <span class="text-green-600">+{{ mov.quantidade }}</span>
+                                    {% else %}
+                                        <span class="text-red-600">-{{ mov.quantidade }}</span>
+                                    {% endif %}
+                                    {{ produto.get_unidade_display }}
+                                </p>
+                                <p class="text-xs text-gray-500">{{ mov.created_at|date:"d/m/Y H:i" }}</p>
+                            </div>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {% if mov.tipo == 'ENTRADA' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ mov.get_tipo_display }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-sm text-gray-500 text-center py-4">Nenhuma movimentação registrada</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+{% if grafico_labels %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('evolucaoEstoqueChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {{ grafico_labels }},
+                datasets: [{
+                    label: 'Estoque',
+                    data: {{ grafico_dados }},
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
+{% endblock %}
+

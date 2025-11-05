@@ -3,75 +3,143 @@
 {% block page_title %}Entrada Manual{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-box-arrow-in-down"></i> Entrada Manual de Produtos</h5>
-                <a href="{% url 'estoque:entrada_xml' %}" class="btn btn-sm btn-outline-primary">
-                    <i class="bi bi-file-earmark-code"></i> Entrada via XML
-                </a>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.produto.id_for_label }}" class="form-label">{{ form.produto.label }}</label>
-                        {{ form.produto }}
-                        {% if form.produto.errors %}
-                            <div class="text-danger small">{{ form.produto.errors }}</div>
+<!-- Breadcrumb -->
+<nav class="mb-6">
+    <ol class="flex items-center space-x-2 text-sm text-gray-500">
+        <li><a href="{% url 'estoque:index' %}" class="hover:text-gray-700">Home</a></li>
+        <li><span>/</span></li>
+        <li class="text-gray-900 font-medium">Entrada Manual</li>
+    </ol>
+</nav>
+
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Entrada Manual de Produtos</h3>
+            <a href="{% url 'estoque:entrada_xml' %}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                Entrada via XML
+            </a>
+        </div>
+        <div class="p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <div>
+                    <label for="{{ form.produto.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.produto.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.produto }}
+                    {% if form.produto.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.produto.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.quantidade.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.quantidade.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.quantidade }}
+                        {% if form.quantidade.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.quantidade.errors }}</p>
                         {% endif %}
                     </div>
                     
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.quantidade.id_for_label }}" class="form-label">{{ form.quantidade.label }}</label>
-                            {{ form.quantidade }}
-                            {% if form.quantidade.errors %}
-                                <div class="text-danger small">{{ form.quantidade.errors }}</div>
-                            {% endif %}
+                    <div>
+                        <label for="{{ form.custo_unitario.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.custo_unitario.label }} <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">R$</span>
+                            {{ form.custo_unitario }}
                         </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.custo_unitario.id_for_label }}" class="form-label">{{ form.custo_unitario.label }}</label>
-                            <div class="input-group">
-                                <span class="input-group-text">R$</span>
-                                {{ form.custo_unitario }}
-                            </div>
-                            {% if form.custo_unitario.errors %}
-                                <div class="text-danger small">{{ form.custo_unitario.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.fornecedor.id_for_label }}" class="form-label">{{ form.fornecedor.label }}</label>
-                        {{ form.fornecedor }}
-                        <small class="form-text text-muted">Opcional</small>
-                        {% if form.fornecedor.errors %}
-                            <div class="text-danger small">{{ form.fornecedor.errors }}</div>
+                        {% if form.custo_unitario.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.custo_unitario.errors }}</p>
                         {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.observacao.id_for_label }}" class="form-label">{{ form.observacao.label }}</label>
-                        {{ form.observacao }}
-                        {% if form.observacao.errors %}
-                            <div class="text-danger small">{{ form.observacao.errors }}</div>
-                        {% endif %}
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-check-circle"></i> Registrar Entrada
+                </div>
+                
+                <div>
+                    <label for="{{ form.fornecedor.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.fornecedor.label }}
+                        <span class="text-gray-500 font-normal">(opcional)</span>
+                    </label>
+                    {{ form.fornecedor }}
+                    {% if form.fornecedor.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.fornecedor.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="{{ form.observacao.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.observacao.label }}
+                    </label>
+                    {{ form.observacao }}
+                    {% if form.observacao.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.observacao.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
+                    <button type="submit" class="inline-flex items-center px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Registrar Entrada
                     </button>
-                    <a href="{% url 'estoque:index' %}" class="btn btn-secondary">
-                        <i class="bi bi-x-circle"></i> Cancelar
+                    <a href="{% url 'estoque:index' %}" class="inline-flex items-center px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancelar
                     </a>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-{% endblock %}
 
+<style>
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+}
+
+input[type="number"] {
+    padding-left: 2.5rem;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+</style>
+{% endblock %}

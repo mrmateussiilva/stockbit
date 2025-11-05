@@ -62,6 +62,14 @@ class Product(models.Model):
         validators=[MinValueValidator(Decimal('0.00'))],
         verbose_name='Quantidade em Estoque'
     )
+    estoque_minimo = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        validators=[MinValueValidator(Decimal('0.00'))],
+        verbose_name='Estoque Mínimo',
+        help_text='Quantidade mínima para alerta de estoque baixo'
+    )
     custo_unitario = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -90,6 +98,18 @@ class Product(models.Model):
     def valor_total_estoque(self):
         """Calcula o valor total do estoque deste produto"""
         return self.quantidade_estoque * self.custo_unitario
+    
+    @property
+    def estoque_baixo(self):
+        """Verifica se o estoque está abaixo do mínimo"""
+        if self.estoque_minimo > 0:
+            return self.quantidade_estoque <= self.estoque_minimo
+        return False
+    
+    @property
+    def estoque_critico(self):
+        """Verifica se o estoque está crítico (menor ou igual a 5, padrão)"""
+        return self.quantidade_estoque <= 5
     
     @staticmethod
     def generate_sku():
