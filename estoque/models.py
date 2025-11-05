@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.core.validators import MinValueValidator
+from django.core.cache import cache
 from decimal import Decimal
 
 
@@ -167,6 +168,14 @@ class Product(models.Model):
                     break
         
         super().save(*args, **kwargs)
+        
+        # Invalida o cache do dashboard após salvar/atualizar produto
+        cache.delete('dashboard_stats')
+    
+    def delete(self, *args, **kwargs):
+        """Invalida cache ao deletar produto"""
+        cache.delete('dashboard_stats')
+        super().delete(*args, **kwargs)
 
 
 class StockMovement(models.Model):
@@ -227,6 +236,9 @@ class StockMovement(models.Model):
             self.produto.custo_unitario = novo_custo
         
         self.produto.save()
+        
+        # Invalida o cache do dashboard após movimentação
+        cache.delete('dashboard_stats')
 
 
 class WhatsAppOrder(models.Model):

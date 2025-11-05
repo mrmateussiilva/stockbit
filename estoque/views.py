@@ -49,42 +49,43 @@ def logout_view(request):
 @login_required
 def index(request):
     """Página inicial com dashboard"""
-    from django.core.cache import cache
+    # Sem cache para garantir atualização imediata
+    # Otimização: usa select_related e prefetch_related
+    total_produtos = Product.objects.count()
+    total_categorias = Category.objects.count()
     
-    # Cache de estatísticas por 5 minutos
-    cache_key = 'dashboard_stats'
-    stats = cache.get(cache_key)
+    # Produtos com estoque baixo (critico <= 5 ou abaixo do mínimo configurado)
+    produtos_baixo_estoque = Product.objects.filter(
+        Q(quantidade_estoque__lte=5) |
+        Q(quantidade_estoque__lte=F('estoque_minimo'), estoque_minimo__gt=0)
+    ).count()
     
-    if stats is None:
-        # Otimização: usa select_related e prefetch_related
-        total_produtos = Product.objects.count()
-        total_categorias = Category.objects.count()
-        
-        # Produtos com estoque baixo (critico <= 5 ou abaixo do mínimo configurado)
-        produtos_baixo_estoque = Product.objects.filter(
-            Q(quantidade_estoque__lte=5) |
-            Q(quantidade_estoque__lte=F('estoque_minimo'), estoque_minimo__gt=0)
-        ).count()
-        
-        # Produtos com estoque abaixo do mínimo configurado
-        produtos_abaixo_minimo = Product.objects.filter(
-            quantidade_estoque__lte=F('estoque_minimo'),
-            estoque_minimo__gt=0
-        ).count()
-        
-        # Calcula valor total do estoque (otimizado)
-        valor_total_estoque = Product.objects.aggregate(
-            total=Sum(F('quantidade_estoque') * F('custo_unitario'))
-        )['total'] or Decimal('0.00')
-        
-        stats = {
-            'total_produtos': total_produtos,
-            'total_categorias': total_categorias,
-            'produtos_baixo_estoque': produtos_baixo_estoque,
-            'produtos_abaixo_minimo': produtos_abaixo_minimo,
-            'valor_total_estoque': valor_total_estoque,
-        }
-        cache.set(cache_key, stats, 300)  # Cache por 5 minutos
+    # Produtos com estoque abaixo do mínimo configurado
+    produtos_abaixo_minimo = Product.objects.filter(
+        quantidade_estoque__lte=F('estoque_minimo'),
+        estoque_minimo__gt=0
+    ).count()
+    
+    # Calcula valor total do estoque (otimizado)
+    # Garante que retorna 0.00 quando não há produtos ou quando o resultado é None
+    resultado_agregacao = Product.objects.aggregate(
+        total=Sum(F('quantidade_estoque') * F('custo_unitario'))
+    )
+    valor_total_estoque = resultado_agregacao['total']
+    
+    # Verifica se é None ou se não há produtos
+    if valor_total_estoque is None or total_produtos == 0:
+        valor_total_estoque = Decimal('0.00')
+    else:
+        valor_total_estoque = Decimal(str(valor_total_estoque))
+    
+    stats = {
+        'total_produtos': total_produtos,
+        'total_categorias': total_categorias,
+        'produtos_baixo_estoque': produtos_baixo_estoque,
+        'produtos_abaixo_minimo': produtos_abaixo_minimo,
+        'valor_total_estoque': valor_total_estoque,
+    }
     
     # Movimentações recentes (sempre atualizado, sem cache)
     movimentacoes_recentes = StockMovement.objects.select_related(
