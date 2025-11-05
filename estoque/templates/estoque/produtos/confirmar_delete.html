@@ -58,7 +58,7 @@
                 </div>
             </div>
             
-            <!-- Verificação de Movimentações -->
+            <!-- Aviso sobre Movimentações -->
             {% if produto.movimentacoes.exists %}
             <div class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                 <div class="flex items-start">
@@ -66,24 +66,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
                     <div>
-                        <p class="font-medium text-yellow-800 mb-1">Não é possível deletar este produto!</p>
+                        <p class="font-medium text-yellow-800 mb-1">⚠️ Atenção: Histórico será perdido!</p>
                         <p class="text-sm text-yellow-700">
                             Este produto possui <strong>{{ produto.movimentacoes.count }}</strong> movimentação(ões) vinculada(s). 
-                            Para manter a integridade dos dados históricos, não é permitido deletar produtos com movimentações.
+                            Ao deletar este produto, <strong>todo o histórico de movimentações será permanentemente removido</strong>.
                         </p>
-                        <p class="text-sm text-yellow-700 mt-2">
-                            Considere desativar o produto ao invés de deletá-lo.
+                        <p class="text-sm text-yellow-700 mt-2 font-medium">
+                            Esta ação não pode ser desfeita!
                         </p>
                     </div>
                 </div>
             </div>
+            {% endif %}
             
-            <div class="flex gap-3">
-                <a href="{% url 'estoque:produto_detalhar' produto.pk %}" class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-center font-medium">
-                    Voltar
-                </a>
-            </div>
-            {% else %}
             <form method="post" class="space-y-4">
                 {% csrf_token %}
                 
@@ -96,7 +91,6 @@
                     </button>
                 </div>
             </form>
-            {% endif %}
         </div>
     </div>
 </div>

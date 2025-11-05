@@ -227,3 +227,30 @@ class StockMovement(models.Model):
             self.produto.custo_unitario = novo_custo
         
         self.produto.save()
+
+
+class WhatsAppOrder(models.Model):
+    """Pedido gerado para WhatsApp"""
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='pedidos_whatsapp')
+    mensagem = models.TextField(verbose_name='Mensagem do Pedido')
+    valor_total = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Valor Total'
+    )
+    total_itens = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00'),
+        verbose_name='Total de Itens'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Pedido WhatsApp'
+        verbose_name_plural = 'Pedidos WhatsApp'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Pedido - R$ {self.valor_total} - {self.created_at.strftime('%d/%m/%Y %H:%M')}"

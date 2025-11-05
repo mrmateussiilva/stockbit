@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from .models import Product, Category, Supplier, StockMovement
+from .models import Product, Category, Supplier, StockMovement, WhatsAppOrder
 from .forms import (
     ProductForm, CategoryForm, SupplierForm,
     EntradaManualForm, SaidaForm, XMLUploadForm
@@ -525,21 +525,22 @@ def produto_deletar(request, pk):
     """Deletar produto"""
     produto = get_object_or_404(Product, pk=pk)
     
-    # Verifica se há movimentações
-    movimentacoes_count = produto.movimentacoes.count()
-    
-    if movimentacoes_count > 0:
-        messages.error(
-            request,
-            f'Não é possível deletar o produto "{produto.nome}" pois existem {movimentacoes_count} movimentação(ões) vinculada(s) a ele. '
-            f'Considere desativar o produto ao invés de deletá-lo.'
-        )
-        return redirect('estoque:produto_detalhar', pk=produto.pk)
-    
     if request.method == 'POST':
         nome_produto = produto.nome
+        movimentacoes_count = produto.movimentacoes.count()
+        
+        # Deleta o produto (as movimentações serão deletadas automaticamente via CASCADE)
         produto.delete()
-        messages.success(request, f'Produto "{nome_produto}" deletado com sucesso!')
+        
+        if movimentacoes_count > 0:
+            messages.success(
+                request, 
+                f'Produto "{nome_produto}" deletado com sucesso! '
+                f'({movimentacoes_count} movimentação(ões) também foram removida(s))'
+            )
+        else:
+            messages.success(request, f'Produto "{nome_produto}" deletado com sucesso!')
+        
         return redirect('estoque:produto_lista')
     
     return render(request, 'estoque/produtos/confirmar_delete.html', {
@@ -981,11 +982,26 @@ def pedido_whatsapp(request):
             # URL do WhatsApp Web/App
             whatsapp_url = f"https://wa.me/?text={mensagem_encoded}"
             
+            # Calcula total de itens
+            total_itens = sum(item['quantidade'] for item in produtos_selecionados)
+            
+            # Salva o pedido no banco de dados
+            WhatsAppOrder.objects.create(
+                usuario=request.user,
+                mensagem=mensagem,
+                valor_total=total,
+                total_itens=total_itens
+            )
+            
+            # Busca os últimos 10 pedidos gerados
+            ultimos_pedidos = WhatsAppOrder.objects.select_related('usuario').order_by('-created_at')[:10]
+            
             return render(request, 'estoque/pedidos/whatsapp.html', {
                 'produtos_selecionados': produtos_selecionados,
                 'total': total,
                 'whatsapp_url': whatsapp_url,
                 'mensagem': mensagem,
+                'ultimos_pedidos': ultimos_pedidos,
             })
         else:
             messages.warning(request, 'Selecione pelo menos um produto com quantidade.')
@@ -998,6 +1014,10 @@ def pedido_whatsapp(request):
             produtos_por_categoria[cat_nome] = []
         produtos_por_categoria[cat_nome].append(produto)
     
+    # Busca os últimos 10 pedidos gerados
+    ultimos_pedidos = WhatsAppOrder.objects.select_related('usuario').order_by('-created_at')[:10]
+    
     return render(request, 'estoque/pedidos/whatsapp.html', {
         'produtos_por_categoria': produtos_por_categoria,
+        'ultimos_pedidos': ultimos_pedidos,
     })

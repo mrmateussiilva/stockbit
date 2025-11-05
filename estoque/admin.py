@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Category, Supplier, StockMovement
+from .models import Product, Category, Supplier, StockMovement, WhatsAppOrder
 
 
 @admin.register(Category)
@@ -32,4 +32,14 @@ class StockMovementAdmin(admin.ModelAdmin):
     search_fields = ['produto__nome', 'produto__codigo', 'observacao']
     ordering = ['-created_at']
     readonly_fields = ['created_at']
+    date_hierarchy = 'created_at'
+
+
+@admin.register(WhatsAppOrder)
+class WhatsAppOrderAdmin(admin.ModelAdmin):
+    list_display = ['valor_total', 'total_itens', 'usuario', 'created_at']
+    list_filter = ['created_at', 'usuario']
+    search_fields = ['mensagem', 'usuario__username']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'mensagem']
     date_hierarchy = 'created_at'
